@@ -40,6 +40,7 @@ export interface PageDetailsPageProps {
   loading: boolean;
   errors: PageErrorWithAttributesFragment[];
   page: PageDetailsFragment;
+  pageMediaUrls: Array<{ url: string }>;
   pageTypes?: RelayToFlat<SearchPageTypesQuery["search"]>;
   referencePages?: RelayToFlat<SearchPagesQuery["search"]>;
   referenceProducts?: RelayToFlat<SearchProductsQuery["search"]>;
@@ -71,6 +72,7 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
   loading,
   errors: apiErrors,
   page,
+  pageMediaUrls,
   pageTypes: pageTypeChoiceList,
   referencePages,
   referenceProducts,
@@ -166,6 +168,7 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
             <DetailPageLayout.Content>
               <PageInfo
                 data={data}
+                pageMediaUrls={pageMediaUrls}
                 disabled={loading}
                 errors={errors}
                 onChange={change}

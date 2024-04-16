@@ -3,7 +3,7 @@ import CardTitle from "@dashboard/components/CardTitle";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import RichTextEditor from "@dashboard/components/RichTextEditor";
 import { RichTextEditorLoading } from "@dashboard/components/RichTextEditor/RichTextEditorLoading";
-import { PageErrorFragment, usePageMediaUrlQuery } from "@dashboard/graphql";
+import { PageErrorFragment } from "@dashboard/graphql";
 import { commonMessages } from "@dashboard/intl";
 import { getFormErrors } from "@dashboard/utils/errors";
 import getPageErrorMessage from "@dashboard/utils/errors/page";
@@ -17,6 +17,7 @@ import { PageData } from "../PageDetailsPage/form";
 
 export interface PageInfoProps {
   data: PageData;
+  pageMediaUrls: Array<{ url: string }>;
   disabled: boolean;
   errors: PageErrorFragment[];
   onChange: (event: React.ChangeEvent<any>) => void;
@@ -33,27 +34,27 @@ const useStyles = makeStyles(
 );
 
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, disabled, errors, onChange, onImageUpload } = props;
+  const { data, pageMediaUrls, disabled, errors, onChange, onImageUpload } =
+    props;
 
   const classes = useStyles(props);
   const intl = useIntl();
 
   const { defaultValue, editorRef, isReadyForMount, handleChange } =
     useRichTextContext();
-  const { data: result } = usePageMediaUrlQuery({
-    variables: { id: data?.id, size: 0 },
-  });
   const formErrors = getFormErrors(["title", "content"], errors);
 
-  defaultValue.blocks.forEach(block => {
-    if (block.type === "image") {
-      const imageName = block.data.file.url.split("/").pop();
-      const pageMedia = result.page.media.find(
-        media => media.url.split("/").pop() === imageName,
-      );
-      block.data.file.url = pageMedia.url;
-    }
-  });
+  if (pageMediaUrls) {
+    defaultValue?.blocks.forEach(block => {
+      if (block.type === "image") {
+        const imageName = block.data.file.url.split("/").pop();
+        const pageMedia = pageMediaUrls.find(
+          media => media.url.split("/").pop() === imageName,
+        );
+        block.data.file.url = pageMedia ? pageMedia.url : block.data.file.url;
+      }
+    });
+  }
 
   return (
     <Card className={classes.root}>
