@@ -17,6 +17,7 @@ import { PageData } from "../PageDetailsPage/form";
 
 export interface PageInfoProps {
   data: PageData;
+  pageMediaUrls: Array<{ url: string }>;
   disabled: boolean;
   errors: PageErrorFragment[];
   onChange: (event: React.ChangeEvent<any>) => void;
@@ -33,7 +34,8 @@ const useStyles = makeStyles(
 );
 
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, disabled, errors, onChange, onImageUpload } = props;
+  const { data, pageMediaUrls, disabled, errors, onChange, onImageUpload } =
+    props;
 
   const classes = useStyles(props);
   const intl = useIntl();
@@ -41,6 +43,22 @@ const PageInfo: React.FC<PageInfoProps> = props => {
   const { defaultValue, editorRef, isReadyForMount, handleChange } =
     useRichTextContext();
   const formErrors = getFormErrors(["title", "content"], errors);
+
+  if (pageMediaUrls) {
+    defaultValue?.blocks.forEach(block => {
+      if (block.type === "image") {
+        const imageName = block.data.file.url
+          .split("?")
+          .shift()
+          .split("/")
+          .pop();
+        const pageMedia = pageMediaUrls.find(
+          media => media.url.split("?").shift().split("/").pop() === imageName,
+        );
+        block.data.file.url = pageMedia ? pageMedia.url : block.data.file.url;
+      }
+    });
+  }
 
   return (
     <Card className={classes.root}>
