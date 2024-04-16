@@ -28,6 +28,7 @@ import {
   useFileUploadMutation,
   usePageDetailsQuery,
   usePageMediaCreateMutation,
+  usePageMediaUrlQuery,
   usePageRemoveMutation,
   usePageUpdateMutation,
   useUpdateMetadataMutation,
@@ -90,6 +91,13 @@ export const PageDetails: React.FC<PageDetailsProps> = ({ id, params }) => {
     variables: {
       id,
       firstValues: VALUES_PAGINATE_BY,
+    },
+  });
+
+  const pageMediaUrls = usePageMediaUrlQuery({
+    variables: {
+      id,
+      size: 0,
     },
   });
 
@@ -248,6 +256,7 @@ export const PageDetails: React.FC<PageDetailsProps> = ({ id, params }) => {
         errors={pageUpdateOpts.data?.pageUpdate.errors || []}
         saveButtonBarState={pageUpdateOpts.status}
         page={pageDetails.data?.page}
+        pageMediaUrls={pageMediaUrls.data?.page?.media}
         attributeValues={attributeValues}
         onRemove={() =>
           navigate(
