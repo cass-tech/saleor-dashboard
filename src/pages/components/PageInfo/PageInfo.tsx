@@ -47,9 +47,13 @@ const PageInfo: React.FC<PageInfoProps> = props => {
   if (pageMediaUrls) {
     defaultValue?.blocks.forEach(block => {
       if (block.type === "image") {
-        const imageName = block.data.file.url.split("/").pop();
+        const imageName = block.data.file.url
+          .split("?")
+          .shift()
+          .split("/")
+          .pop();
         const pageMedia = pageMediaUrls.find(
-          media => media.url.split("/").pop() === imageName,
+          media => media.url.split("?").shift().split("/").pop() === imageName,
         );
         block.data.file.url = pageMedia ? pageMedia.url : block.data.file.url;
       }
