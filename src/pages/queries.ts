@@ -90,6 +90,7 @@ export const pageMediaUrlQuery = gql`
     page(id: $id) {
       media {
         url(size: $size)
+        id
       }
     }
   }
