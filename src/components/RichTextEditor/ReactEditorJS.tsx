@@ -6,7 +6,6 @@ import EditorJS, {
   OutputData,
   ToolConstructable,
 } from "@editorjs/editorjs";
-import ImageTool from "@editorjs/image";
 import Paragraph from "@editorjs/paragraph";
 import {
   EditorCore,
@@ -15,6 +14,8 @@ import {
 } from "@react-editor-js/core";
 import React from "react";
 import { Merge } from "react-hook-form";
+
+import { CustomImageTool } from "./consts";
 
 // Source of @react-editor-js
 class ClientEditorCore implements EditorCore {
@@ -37,7 +38,7 @@ class ClientEditorCore implements EditorCore {
       const handleImageUpload = createFileUploadHandler(upload, {});
       const imageTool = {
         image: {
-          class: ImageTool,
+          class: CustomImageTool,
           config: {
             uploader: {
               uploadByFile(file: File) {
