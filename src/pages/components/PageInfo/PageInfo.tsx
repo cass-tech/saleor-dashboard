@@ -17,7 +17,10 @@ import { PageData } from "../PageDetailsPage/form";
 
 export interface PageInfoProps {
   data: PageData;
-  pageMediaUrls: Array<{ url: string }>;
+  pageMediaUrls: Array<{
+    id: string;
+    url: string;
+  }>;
   disabled: boolean;
   errors: PageErrorFragment[];
   onChange: (event: React.ChangeEvent<any>) => void;
@@ -56,6 +59,7 @@ const PageInfo: React.FC<PageInfoProps> = props => {
           media => media.url.split("?").shift().split("/").pop() === imageName,
         );
         block.data.file.url = pageMedia ? pageMedia.url : block.data.file.url;
+        block.data.file.id = pageMedia ? pageMedia.id : block.id;
       }
     });
   }
