@@ -1,5 +1,5 @@
 import { apolloClient } from "@dashboard/graphql/client";
-import { pageMediaUrlQuery } from "@dashboard/pages/queries";
+import { pageMediaQuery } from "@dashboard/pages/queries";
 import createFileUploadHandler from "@dashboard/utils/handlers/fileUploadHandler";
 import EditorJS, {
   EditorConfig,
@@ -49,7 +49,7 @@ class ClientEditorCore implements EditorCore {
                   .then((id: string) => {
                     return apolloClient.query({
                       fetchPolicy: "network-only",
-                      query: pageMediaUrlQuery,
+                      query: pageMediaQuery,
                       variables: {
                         id,
                         size: 0,
