@@ -85,8 +85,8 @@ export const pageCountQuery = gql`
   }
 `;
 
-export const pageMediaUrlQuery = gql`
-  query PageMediaUrl($id: ID, $size: Int) {
+export const pageMediaQuery = gql`
+  query PageMedia($id: ID, $size: Int) {
     page(id: $id) {
       media {
         url(size: $size)

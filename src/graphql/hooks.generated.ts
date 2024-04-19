@@ -13200,44 +13200,45 @@ export function usePageCountLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHo
 export type PageCountQueryHookResult = ReturnType<typeof usePageCountQuery>;
 export type PageCountLazyQueryHookResult = ReturnType<typeof usePageCountLazyQuery>;
 export type PageCountQueryResult = Apollo.QueryResult<Types.PageCountQuery, Types.PageCountQueryVariables>;
-export const PageMediaUrlDocument = gql`
-    query PageMediaUrl($id: ID, $size: Int) {
+export const PageMediaDocument = gql`
+    query PageMedia($id: ID, $size: Int) {
   page(id: $id) {
     media {
       url(size: $size)
+      id
     }
   }
 }
     `;
 
 /**
- * __usePageMediaUrlQuery__
+ * __usePageMediaQuery__
  *
- * To run a query within a React component, call `usePageMediaUrlQuery` and pass it any options that fit your needs.
- * When your component renders, `usePageMediaUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `usePageMediaQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePageMediaQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = usePageMediaUrlQuery({
+ * const { data, loading, error } = usePageMediaQuery({
  *   variables: {
  *      id: // value for 'id'
  *      size: // value for 'size'
  *   },
  * });
  */
-export function usePageMediaUrlQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<Types.PageMediaUrlQuery, Types.PageMediaUrlQueryVariables>) {
+export function usePageMediaQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<Types.PageMediaQuery, Types.PageMediaQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return ApolloReactHooks.useQuery<Types.PageMediaUrlQuery, Types.PageMediaUrlQueryVariables>(PageMediaUrlDocument, options);
+        return ApolloReactHooks.useQuery<Types.PageMediaQuery, Types.PageMediaQueryVariables>(PageMediaDocument, options);
       }
-export function usePageMediaUrlLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<Types.PageMediaUrlQuery, Types.PageMediaUrlQueryVariables>) {
+export function usePageMediaLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<Types.PageMediaQuery, Types.PageMediaQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return ApolloReactHooks.useLazyQuery<Types.PageMediaUrlQuery, Types.PageMediaUrlQueryVariables>(PageMediaUrlDocument, options);
+          return ApolloReactHooks.useLazyQuery<Types.PageMediaQuery, Types.PageMediaQueryVariables>(PageMediaDocument, options);
         }
-export type PageMediaUrlQueryHookResult = ReturnType<typeof usePageMediaUrlQuery>;
-export type PageMediaUrlLazyQueryHookResult = ReturnType<typeof usePageMediaUrlLazyQuery>;
-export type PageMediaUrlQueryResult = Apollo.QueryResult<Types.PageMediaUrlQuery, Types.PageMediaUrlQueryVariables>;
+export type PageMediaQueryHookResult = ReturnType<typeof usePageMediaQuery>;
+export type PageMediaLazyQueryHookResult = ReturnType<typeof usePageMediaLazyQuery>;
+export type PageMediaQueryResult = Apollo.QueryResult<Types.PageMediaQuery, Types.PageMediaQueryVariables>;
 export const PermissionGroupDeleteDocument = gql`
     mutation PermissionGroupDelete($id: ID!) {
   permissionGroupDelete(id: $id) {
