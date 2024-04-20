@@ -3,8 +3,13 @@ import CardTitle from "@dashboard/components/CardTitle";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import RichTextEditor from "@dashboard/components/RichTextEditor";
 import { RichTextEditorLoading } from "@dashboard/components/RichTextEditor/RichTextEditorLoading";
-import { PageErrorFragment } from "@dashboard/graphql";
-import { commonMessages } from "@dashboard/intl";
+import {
+  PageErrorFragment,
+  PageMediaDeleteMutationVariables,
+  usePageMediaDeleteMutation,
+} from "@dashboard/graphql";
+import useNotifier from "@dashboard/hooks/useNotifier";
+import { commonMessages, errorMessages } from "@dashboard/intl";
 import { getFormErrors } from "@dashboard/utils/errors";
 import getPageErrorMessage from "@dashboard/utils/errors/page";
 import { useRichTextContext } from "@dashboard/utils/richText/context";
@@ -17,10 +22,10 @@ import { PageData } from "../PageDetailsPage/form";
 
 export interface PageInfoProps {
   data: PageData;
-  pageMediaUrls: Array<{
+  pageMedia: {
     id: string;
-    url: string;
-  }>;
+    media: Array<{ id: string; url: string }>;
+  };
   disabled: boolean;
   errors: PageErrorFragment[];
   onChange: (event: React.ChangeEvent<any>) => void;
@@ -37,17 +42,33 @@ const useStyles = makeStyles(
 );
 
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, pageMediaUrls, disabled, errors, onChange, onImageUpload } =
-    props;
+  const { data, pageMedia, disabled, errors, onChange, onImageUpload } = props;
 
   const classes = useStyles(props);
   const intl = useIntl();
+  const notify = useNotifier();
 
   const { defaultValue, editorRef, isReadyForMount, handleChange } =
     useRichTextContext();
+  const [deletePageMedia] = usePageMediaDeleteMutation({
+    onCompleted: data => {
+      const imageError = data.pageMediaDelete.errors.find(
+        error =>
+          error.field === ("image" as keyof PageMediaDeleteMutationVariables),
+      );
+      if (imageError) {
+        notify({
+          status: "error",
+          title: intl.formatMessage(errorMessages.imageUploadErrorText),
+          text: intl.formatMessage(errorMessages.imageUploadErrorText),
+        });
+      }
+    },
+  });
+
   const formErrors = getFormErrors(["title", "content"], errors);
 
-  if (pageMediaUrls) {
+  if (pageMedia?.media) {
     defaultValue?.blocks.forEach(block => {
       if (block.type === "image") {
         const imageName = block.data.file.url
@@ -55,14 +76,20 @@ const PageInfo: React.FC<PageInfoProps> = props => {
           .shift()
           .split("/")
           .pop();
-        const pageMedia = pageMediaUrls.find(
+        const pageMediaUrl = pageMedia.media.find(
           media => media.url.split("?").shift().split("/").pop() === imageName,
         );
-        block.data.file.url = pageMedia ? pageMedia.url : block.data.file.url;
-        block.data.file.id = pageMedia ? pageMedia.id : block.id;
+        if (pageMediaUrl) {
+          block.data.file.url = pageMediaUrl.url;
+          block.data.file.id = pageMediaUrl.id;
+          block.data.file.page_id = pageMedia.id;
+        }
       }
     });
   }
+
+  const handleImageDelete = (id: string) =>
+    deletePageMedia({ variables: { id } });
 
   return (
     <Card className={classes.root}>
@@ -100,6 +127,7 @@ const PageInfo: React.FC<PageInfoProps> = props => {
             })}
             name={"content" as keyof PageData}
             onImageUpload={onImageUpload}
+            onImageDelete={handleImageDelete}
           />
         ) : (
           <RichTextEditorLoading
