@@ -15,7 +15,7 @@ import {
 import React from "react";
 import { Merge } from "react-hook-form";
 
-import { CustomImageTool } from "./consts";
+import { CustomImageTool as ImageTool } from "./consts";
 
 // Source of @react-editor-js
 class ClientEditorCore implements EditorCore {
@@ -24,6 +24,7 @@ class ClientEditorCore implements EditorCore {
   constructor(
     { tools, ...config }: EditorConfig,
     upload?: (file: File) => Promise<unknown>,
+    deleteFile?: (id: string) => any,
   ) {
     let extendTools = {
       // default tools
@@ -33,6 +34,25 @@ class ClientEditorCore implements EditorCore {
       } as unknown as ToolConstructable,
       ...tools,
     };
+
+    class CustomImageTool extends ImageTool {
+      removed() {
+        if (deleteFile) {
+          // @ts-expect-error
+          deleteFile(this._data.file.id)
+            .then(() => {
+              return {
+                success: 1,
+                file: null,
+              };
+            })
+            .catch(() => {
+              // @ts-expect-error
+              return { success: 0, file: { url: this._data.file.url } };
+            });
+        }
+      }
+    }
 
     if (upload) {
       const handleImageUpload = createFileUploadHandler(upload, {});
@@ -109,13 +129,17 @@ class ClientEditorCore implements EditorCore {
 
 export type Props = Merge<
   Omit<ReactEditorJSProps, "factory">,
-  { onImageUpload: (file: File) => Promise<unknown> }
+  Merge<
+    { onImageUpload: (file: File) => Promise<unknown> },
+    { onImageDelete: (id: string) => any }
+  >
 >;
 
 function ReactEditorJSClient(props: Props) {
-  const { onImageUpload } = props;
+  const { onImageUpload, onImageDelete } = props;
   const factory = React.useCallback(
-    (config: EditorConfig) => new ClientEditorCore(config, onImageUpload),
+    (config: EditorConfig) =>
+      new ClientEditorCore(config, onImageUpload, onImageDelete),
     [],
   );
 
