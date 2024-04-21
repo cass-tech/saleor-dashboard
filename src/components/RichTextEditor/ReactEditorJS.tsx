@@ -1,12 +1,11 @@
 import { apolloClient } from "@dashboard/graphql/client";
-import { pageMediaUrlQuery } from "@dashboard/pages/queries";
+import { pageMediaQuery } from "@dashboard/pages/queries";
 import createFileUploadHandler from "@dashboard/utils/handlers/fileUploadHandler";
 import EditorJS, {
   EditorConfig,
   OutputData,
   ToolConstructable,
 } from "@editorjs/editorjs";
-import ImageTool from "@editorjs/image";
 import Paragraph from "@editorjs/paragraph";
 import {
   EditorCore,
@@ -16,6 +15,8 @@ import {
 import React from "react";
 import { Merge } from "react-hook-form";
 
+import { CustomImageTool as ImageTool } from "./consts";
+
 // Source of @react-editor-js
 class ClientEditorCore implements EditorCore {
   private readonly _editorJS: EditorJS;
@@ -23,6 +24,7 @@ class ClientEditorCore implements EditorCore {
   constructor(
     { tools, ...config }: EditorConfig,
     upload?: (file: File) => Promise<unknown>,
+    deleteFile?: (id: string) => any,
   ) {
     let extendTools = {
       // default tools
@@ -33,11 +35,30 @@ class ClientEditorCore implements EditorCore {
       ...tools,
     };
 
+    class CustomImageTool extends ImageTool {
+      removed() {
+        if (deleteFile) {
+          // @ts-expect-error
+          deleteFile(this._data.file.id)
+            .then(() => {
+              return {
+                success: 1,
+                file: null,
+              };
+            })
+            .catch(() => {
+              // @ts-expect-error
+              return { success: 0, file: { url: this._data.file.url } };
+            });
+        }
+      }
+    }
+
     if (upload) {
       const handleImageUpload = createFileUploadHandler(upload, {});
       const imageTool = {
         image: {
-          class: ImageTool,
+          class: CustomImageTool,
           config: {
             uploader: {
               uploadByFile(file: File) {
@@ -48,7 +69,7 @@ class ClientEditorCore implements EditorCore {
                   .then((id: string) => {
                     return apolloClient.query({
                       fetchPolicy: "network-only",
-                      query: pageMediaUrlQuery,
+                      query: pageMediaQuery,
                       variables: {
                         id,
                         size: 0,
@@ -108,13 +129,17 @@ class ClientEditorCore implements EditorCore {
 
 export type Props = Merge<
   Omit<ReactEditorJSProps, "factory">,
-  { onImageUpload: (file: File) => Promise<unknown> }
+  Merge<
+    { onImageUpload: (file: File) => Promise<unknown> },
+    { onImageDelete: (id: string) => any }
+  >
 >;
 
 function ReactEditorJSClient(props: Props) {
-  const { onImageUpload } = props;
+  const { onImageUpload, onImageDelete } = props;
   const factory = React.useCallback(
-    (config: EditorConfig) => new ClientEditorCore(config, onImageUpload),
+    (config: EditorConfig) =>
+      new ClientEditorCore(config, onImageUpload, onImageDelete),
     [],
   );
 

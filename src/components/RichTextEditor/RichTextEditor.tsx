@@ -28,6 +28,7 @@ export interface RichTextEditorProps extends Omit<EditorJsProps, "onChange"> {
   onChange?: (data?: OutputData) => void;
   onBlur?: () => void;
   onImageUpload?: (file: File) => any;
+  onImageDelete?: (id: string) => any;
 }
 
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
@@ -41,6 +42,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onInitialize,
   onChange,
   onImageUpload,
+  onImageDelete,
   onBlur,
   ...props
 }) => {
@@ -77,7 +79,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <Box
         as="label"
         color={error ? "critical2" : "default2"}
-        fontWeight="regular"
+        __fontWeight="regular"
         size={1}
         position="absolute"
         htmlFor={id}
@@ -101,6 +103,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
             return onChange?.(editorJsValue);
           }}
           onImageUpload={onImageUpload}
+          onImageDelete={onImageDelete}
           {...props}
         >
           <div

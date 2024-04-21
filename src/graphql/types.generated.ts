@@ -11295,13 +11295,13 @@ export type PageCountQueryVariables = Exact<{
 
 export type PageCountQuery = { __typename: 'Query', pages: { __typename: 'PageCountableConnection', totalCount: number | null } | null };
 
-export type PageMediaUrlQueryVariables = Exact<{
+export type PageMediaQueryVariables = Exact<{
   id?: InputMaybe<Scalars['ID']>;
   size?: InputMaybe<Scalars['Int']>;
 }>;
 
 
-export type PageMediaUrlQuery = { __typename: 'Query', page: { __typename: 'Page', media: Array<{ __typename: 'PageMedia', url: string }> | null } | null };
+export type PageMediaQuery = { __typename: 'Query', page: { __typename: 'Page', media: Array<{ __typename: 'PageMedia', url: string, id: string }> | null } | null };
 
 export type PermissionGroupDeleteMutationVariables = Exact<{
   id: Scalars['ID'];

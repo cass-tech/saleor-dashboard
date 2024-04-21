@@ -208,7 +208,7 @@ export const PageCreate: React.FC<PageCreateProps> = ({ params }) => {
         errors={errors}
         saveButtonBarState={pageCreateOpts.status}
         page={null}
-        pageMediaUrls={null}
+        pageMedia={null}
         attributeValues={attributeValues}
         pageTypes={mapEdgesToItems(searchPageTypesOpts?.data?.search) || []}
         onRemove={() => undefined}
