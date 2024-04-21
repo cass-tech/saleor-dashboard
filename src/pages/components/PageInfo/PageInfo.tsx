@@ -63,6 +63,8 @@ const PageInfo: React.FC<PageInfoProps> = props => {
           text: intl.formatMessage(errorMessages.imageUploadErrorText),
         });
       }
+      // todo callback to submit form
+      // todo maybe add success toast
     },
   });
 

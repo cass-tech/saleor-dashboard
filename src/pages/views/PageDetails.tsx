@@ -133,6 +133,8 @@ export const PageDetails: React.FC<PageDetailsProps> = ({ id, params }) => {
           text: intl.formatMessage(errorMessages.imageUploadErrorText),
         });
       }
+      // todo callback to submit form, refresh page or add media id to image tag
+      // todo maybe add success toast
     },
   });
 
