@@ -70,7 +70,7 @@ const PageInfo: React.FC<PageInfoProps> = props => {
 
   const formErrors = getFormErrors(["title", "content"], errors);
 
-  if (pageMedia?.media) {
+  if (pageMedia?.media && defaultValue?.blocks) {
     defaultValue?.blocks.forEach(block => {
       if (block.type === "image") {
         const imageName = block.data.file.url
