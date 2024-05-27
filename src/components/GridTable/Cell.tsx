@@ -16,6 +16,7 @@ export const GridTableCell = React.forwardRef<GridTableCellElement, GridTableCel
         padding={2}
         borderTopStyle="solid"
         borderBottomStyle="solid"
+        // @ts-ignore
         borderCollapse="collapse"
         borderColor="default1"
         borderWidth={1}

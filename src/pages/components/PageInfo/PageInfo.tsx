@@ -20,7 +20,7 @@ import { useIntl } from "react-intl";
 
 import { PageData } from "../PageDetailsPage/form";
 
-export interface PageInfoProps {
+interface PageInfoProps {
   data: PageData;
   pageMedia: {
     id: string;
@@ -41,7 +41,7 @@ const useStyles = makeStyles(
   { name: "PageInfo" },
 );
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, pageMedia, disabled, errors, onChange } = props;
+  const { data, onImageUpload, pageMedia, disabled, errors, onChange } = props;
   const classes = useStyles(props);
   const intl = useIntl();
   const notify = useNotifier();

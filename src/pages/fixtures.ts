@@ -436,6 +436,7 @@ export const page: PageDetailsFragment = {
   seoTitle: "About",
   slug: "about",
   title: "About",
+  media: []
 };
 
 export const pageTypesList: Array<Pick<PageType, "id" | "name">> = [

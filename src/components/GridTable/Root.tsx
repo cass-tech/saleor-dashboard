@@ -17,6 +17,7 @@ export const GridTableRoot = React.forwardRef<GridTableRootElement, GridTableRoo
         width="100%"
         borderTopStyle="solid"
         borderBottomStyle="solid"
+        // @ts-ignore
         borderCollapse="collapse"
         borderColor="default1"
         borderWidth={1}
