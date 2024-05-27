@@ -19,9 +19,7 @@ export class CustomImageTool extends ImageTool {
       // @ts-expect-error
       this.ui.fillImage(file.url);
       // @ts-expect-error
-      this.ui.nodes.imageContainer.querySelector(
-        ".image-tool__image-picture",
-      ).id = this._data.file.id;
+      this.ui.nodes.imageContainer.querySelector(".image-tool__image-picture",).id = this._data.file.id;
     }
   }
 }
