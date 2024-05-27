@@ -8,24 +8,21 @@ import {
 import makeTopLevelSearch from "@dashboard/hooks/makeTopLevelSearch";
 
 export const searchProducts = gql`
-  query SearchProducts(
-    $after: String
-    $first: Int!
-    $query: String!
-    $channel: String
-  ) {
-    search: products(
-      after: $after
-      first: $first
-      filter: { search: $query }
-      channel: $channel
-    ) {
+  query SearchProducts($after: String, $first: Int!, $query: String!, $channel: String) {
+    search: products(after: $after, first: $first, filter: { search: $query }, channel: $channel) {
       edges {
         node {
           id
           name
           thumbnail {
             url
+          }
+          channelListings {
+            channel {
+              id
+              name
+              currencyCode
+            }
           }
           variants {
             id
@@ -56,7 +53,6 @@ export const searchProducts = gql`
   }
 `;
 
-export default makeTopLevelSearch<
-  SearchProductsQuery,
-  SearchProductsQueryVariables
->(SearchProductsDocument);
+export default makeTopLevelSearch<SearchProductsQuery, SearchProductsQueryVariables>(
+  SearchProductsDocument,
+);

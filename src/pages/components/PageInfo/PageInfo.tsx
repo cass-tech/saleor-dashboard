@@ -40,35 +40,31 @@ const useStyles = makeStyles(
   },
   { name: "PageInfo" },
 );
-
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, pageMedia, disabled, errors, onChange, onImageUpload } = props;
-
+  const { data, pageMedia, disabled, errors, onChange } = props;
   const classes = useStyles(props);
   const intl = useIntl();
   const notify = useNotifier();
-
-  const { defaultValue, editorRef, isReadyForMount, handleChange } =
-    useRichTextContext();
-  const [deletePageMedia] = usePageMediaDeleteMutation({
-    onCompleted: data => {
-      const imageError = data.pageMediaDelete.errors.find(
-        error =>
-          error.field === ("image" as keyof PageMediaDeleteMutationVariables),
-      );
-      if (imageError) {
-        notify({
-          status: "error",
-          title: intl.formatMessage(errorMessages.imageUploadErrorText),
-          text: intl.formatMessage(errorMessages.imageUploadErrorText),
-        });
-      }
-      // todo callback to submit form
-      // todo maybe add success toast
-    },
-  });
-
+  const { defaultValue, editorRef, isReadyForMount, handleChange } = useRichTextContext();
   const formErrors = getFormErrors(["title", "content"], errors);
+
+    const [deletePageMedia] = usePageMediaDeleteMutation({
+        onCompleted: data => {
+            const imageError = data.pageMediaDelete.errors.find(
+                error =>
+                    error.field === ("image" as keyof PageMediaDeleteMutationVariables),
+            );
+            if (imageError) {
+                notify({
+                    status: "error",
+                    title: intl.formatMessage(errorMessages.imageUploadErrorText),
+                    text: intl.formatMessage(errorMessages.imageUploadErrorText),
+                });
+            }
+            // todo callback to submit form
+            // todo maybe add success toast
+        },
+    });
 
   if (pageMedia?.media) {
     defaultValue?.blocks.forEach(block => {
@@ -95,9 +91,7 @@ const PageInfo: React.FC<PageInfoProps> = props => {
 
   return (
     <Card className={classes.root}>
-      <CardTitle
-        title={intl.formatMessage(commonMessages.generalInformations)}
-      />
+      <CardTitle title={intl.formatMessage(commonMessages.generalInformations)} />
       <CardContent>
         <TextField
           disabled={disabled}
@@ -145,5 +139,6 @@ const PageInfo: React.FC<PageInfoProps> = props => {
     </Card>
   );
 };
+
 PageInfo.displayName = "PageInfo";
 export default PageInfo;

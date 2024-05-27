@@ -47,9 +47,7 @@ export interface PageDetailsPageProps {
   allowEmptySlug?: boolean;
   saveButtonBarState: ConfirmButtonTransitionState;
   selectedPageType?: PageDetailsFragment["pageType"];
-  attributeValues: RelayToFlat<
-    SearchAttributeValuesQuery["attribute"]["choices"]
-  >;
+  attributeValues: RelayToFlat<SearchAttributeValuesQuery["attribute"]["choices"]>;
   onRemove: () => void;
   onImageUpload?: (file: File) => any;
   onSubmit: (data: PageData) => SubmitPromise;
@@ -99,15 +97,9 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
   const intl = useIntl();
   const localizeDate = useDateLocalize();
   const navigate = useNavigator();
-
   const pageExists = page !== null;
-
   const canOpenAssignReferencesAttributeDialog = !!assignReferencesAttributeId;
-
-  const pageTypes = pageTypeChoiceList
-    ? mapNodeToChoice(pageTypeChoiceList)
-    : [];
-
+  const pageTypes = pageTypeChoiceList ? mapNodeToChoice(pageTypeChoiceList) : [];
   const handleAssignReferenceAttribute = (
     attributeValues: Container[],
     data: PageData,
@@ -127,7 +119,6 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
     );
     onCloseDialog();
   };
-
   const handleSelectPageType = (pageTypeId: string) =>
     onSelectPageType && onSelectPageType(pageTypeId);
 
@@ -147,33 +138,17 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
       onSubmit={onSubmit}
       disabled={loading}
     >
-      {({
-        change,
-        data,
-        validationErrors,
-        handlers,
-        submit,
-        attributeRichTextGetters,
-      }) => {
+      {({ change, data, validationErrors, handlers, submit, attributeRichTextGetters }) => {
         const errors = [...apiErrors, ...validationErrors];
 
         return (
           <DetailPageLayout>
             <TopNav
               href={pageListUrl()}
-              title={
-                !pageExists ? intl.formatMessage(messages.title) : page?.title
-              }
+              title={!pageExists ? intl.formatMessage(messages.title) : page?.title}
             />
             <DetailPageLayout.Content>
-              <PageInfo
-                data={data}
-                pageMedia={pageMedia}
-                disabled={loading}
-                errors={errors}
-                onChange={change}
-                onImageUpload={onImageUpload}
-              />
+              <PageInfo data={data} disabled={loading} errors={errors} onChange={change} pageMedia={pageMedia} onImageUpload={onImageUpload} />
               <CardSpacer />
               <SeoForm
                 errors={errors}
@@ -218,13 +193,11 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
                 disabled={loading}
                 messages={{
                   hiddenLabel: intl.formatMessage(messages.hiddenLabel),
-                  hiddenSecondLabel: intl.formatMessage(
-                    messages.hiddenSecondLabel,
-                    {
-                      date: localizeDate(data.publicationDate),
-                    },
-                  ),
+                  hiddenSecondLabel: intl.formatMessage(messages.hiddenSecondLabel, {
+                    date: localizeDate(data.publishedAt, "llll"),
+                  }),
                   visibleLabel: intl.formatMessage(messages.visibleLabel),
+                  setAvailabilityDateLabel: intl.formatMessage(messages.setAvailabilityDate),
                 }}
                 onChange={change}
               />
@@ -255,9 +228,7 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
                   assignReferencesAttributeId,
                   data.attributes,
                 )}
-                attribute={data.attributes.find(
-                  ({ id }) => id === assignReferencesAttributeId,
-                )}
+                attribute={data.attributes.find(({ id }) => id === assignReferencesAttributeId)}
                 confirmButtonState={"default"}
                 products={referenceProducts}
                 pages={referencePages}
@@ -268,11 +239,7 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
                 loading={handlers.fetchMoreReferences?.loading}
                 onClose={onCloseDialog}
                 onSubmit={attributeValues =>
-                  handleAssignReferenceAttribute(
-                    attributeValues,
-                    data,
-                    handlers,
-                  )
+                  handleAssignReferenceAttribute(attributeValues, data, handlers)
                 }
               />
             )}
@@ -282,5 +249,6 @@ const PageDetailsPage: React.FC<PageDetailsPageProps> = ({
     </PageForm>
   );
 };
+
 PageDetailsPage.displayName = "PageDetailsPage";
 export default PageDetailsPage;

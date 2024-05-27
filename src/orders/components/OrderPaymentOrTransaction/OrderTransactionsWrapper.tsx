@@ -10,9 +10,9 @@ import React from "react";
 
 import OrderAddTransaction from "../OrderAddTransaction";
 import { useStyles } from "../OrderDetailsPage/styles";
+import { OrderDetailsRefundTable } from "../OrderDetailsRefundTable/OrderDetailsRefundTable";
 import OrderGrantedRefunds from "../OrderGrantedRefunds";
 import OrderPaymentSummaryCard from "../OrderPaymentSummaryCard";
-import { OrderRefundDatagrid } from "../OrderRefundDatagrid";
 import OrderSummaryCard from "../OrderSummaryCard";
 import OrderTransaction from "../OrderTransaction";
 import OrderTransactionGiftCard from "../OrderTransactionGiftCard";
@@ -22,10 +22,7 @@ import { getFilteredPayments } from "./utils";
 interface OrderTransactionsWrapper {
   order: OrderDetailsFragment;
   shop: OrderDetailsQuery["shop"];
-  onTransactionAction: (
-    transactionId: string,
-    actionType: TransactionActionEnum,
-  ) => any;
+  onTransactionAction: (transactionId: string, actionType: TransactionActionEnum) => any;
   onPaymentCapture: () => any;
   onMarkAsPaid: () => any;
   onPaymentVoid: () => any;
@@ -44,12 +41,7 @@ export const OrderTransactionsWrapper: React.FC<OrderTransactionsWrapper> = ({
   onRefundAdd,
 }) => {
   const classes = useStyles();
-
-  const filteredPayments = React.useMemo(
-    () => getFilteredPayments(order),
-    [order],
-  );
-
+  const filteredPayments = React.useMemo(() => getFilteredPayments(order), [order]);
   const { enabled } = useFlag("improved_refunds");
 
   return (
@@ -62,11 +54,7 @@ export const OrderTransactionsWrapper: React.FC<OrderTransactionsWrapper> = ({
       <>
         {enabled && (
           <>
-            <OrderRefundDatagrid
-              orderId={order?.id}
-              grantedRefunds={order?.grantedRefunds}
-              onRefundAdd={onRefundAdd}
-            />
+            <OrderDetailsRefundTable orderId={order?.id} order={order} onRefundAdd={onRefundAdd} />
             <CardSpacer />
           </>
         )}
@@ -95,17 +83,10 @@ export const OrderTransactionsWrapper: React.FC<OrderTransactionsWrapper> = ({
           />
         ))}
         {order?.giftCards?.map(giftCard => (
-          <OrderTransactionGiftCard
-            key={giftCard.id}
-            order={order}
-            giftCard={giftCard}
-          />
+          <OrderTransactionGiftCard key={giftCard.id} order={order} giftCard={giftCard} />
         ))}
       </div>
-      <OrderAddTransaction
-        order={order}
-        onAddTransaction={onAddManualTransaction}
-      />
+      <OrderAddTransaction order={order} onAddTransaction={onAddManualTransaction} />
     </>
   );
 };

@@ -17,7 +17,7 @@ import {
 
 export const saleList: SaleFragment[] = [
   {
-    __typename: "Sale" as "Sale",
+    __typename: "Sale" as const,
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -41,7 +41,7 @@ export const saleList: SaleFragment[] = [
     type: "PERCENTAGE" as SaleType,
   },
   {
-    __typename: "Sale" as "Sale",
+    __typename: "Sale" as const,
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -65,7 +65,7 @@ export const saleList: SaleFragment[] = [
     type: "FIXED" as SaleType,
   },
   {
-    __typename: "Sale" as "Sale",
+    __typename: "Sale" as const,
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -89,7 +89,7 @@ export const saleList: SaleFragment[] = [
     type: "PERCENTAGE" as SaleType,
   },
   {
-    __typename: "Sale" as "Sale",
+    __typename: "Sale" as const,
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -113,7 +113,7 @@ export const saleList: SaleFragment[] = [
     type: "PERCENTAGE" as SaleType,
   },
   {
-    __typename: "Sale" as "Sale",
+    __typename: "Sale" as const,
     metadata: [],
     privateMetadata: [],
     channelListings: [
@@ -140,7 +140,7 @@ export const saleList: SaleFragment[] = [
 
 export const voucherList: VoucherFragment[] = [
   {
-    __typename: "Voucher" as "Voucher",
+    __typename: "Voucher" as const,
     name: "Free shipping",
     metadata: [],
     privateMetadata: [],
@@ -179,7 +179,7 @@ export const voucherList: VoucherFragment[] = [
     usageLimit: null,
   },
   {
-    __typename: "Voucher" as "Voucher",
+    __typename: "Voucher" as const,
     name: "Free 2019",
     metadata: [],
     privateMetadata: [],
@@ -308,7 +308,7 @@ export const sale: SaleDetailsFragment = {
           channelListings: [
             {
               __typename: "ProductChannelListing",
-              availableForPurchase: null,
+              availableForPurchaseAt: null,
               channel: {
                 __typename: "Channel",
                 currencyCode: "USD",
@@ -317,7 +317,7 @@ export const sale: SaleDetailsFragment = {
               },
               isAvailableForPurchase: false,
               isPublished: true,
-              publicationDate: "2020-07-14",
+              publishedAt: "2020-07-14",
               visibleInListings: true,
             },
           ],
@@ -341,7 +341,7 @@ export const sale: SaleDetailsFragment = {
           channelListings: [
             {
               __typename: "ProductChannelListing",
-              availableForPurchase: null,
+              availableForPurchaseAt: null,
               channel: {
                 __typename: "Channel",
                 currencyCode: "USD",
@@ -350,7 +350,7 @@ export const sale: SaleDetailsFragment = {
               },
               isAvailableForPurchase: false,
               isPublished: true,
-              publicationDate: "2020-07-14",
+              publishedAt: "2020-07-14",
               visibleInListings: true,
             },
           ],
@@ -374,7 +374,7 @@ export const sale: SaleDetailsFragment = {
           channelListings: [
             {
               __typename: "ProductChannelListing",
-              availableForPurchase: null,
+              availableForPurchaseAt: null,
               channel: {
                 __typename: "Channel",
                 currencyCode: "USD",
@@ -383,7 +383,7 @@ export const sale: SaleDetailsFragment = {
               },
               isAvailableForPurchase: false,
               isPublished: true,
-              publicationDate: "2020-07-14",
+              publishedAt: "2020-07-14",
               visibleInListings: true,
             },
           ],
@@ -407,7 +407,7 @@ export const sale: SaleDetailsFragment = {
           channelListings: [
             {
               __typename: "ProductChannelListing",
-              availableForPurchase: null,
+              availableForPurchaseAt: null,
               channel: {
                 __typename: "Channel",
                 currencyCode: "USD",
@@ -416,7 +416,7 @@ export const sale: SaleDetailsFragment = {
               },
               isAvailableForPurchase: false,
               isPublished: true,
-              publicationDate: "2020-07-14",
+              publishedAt: "2020-07-14",
               visibleInListings: true,
             },
           ],
@@ -463,9 +463,9 @@ export const sale: SaleDetailsFragment = {
             channelListings: [
               {
                 isPublished: true,
-                publicationDate: "2020-01-01",
+                publishedAt: "2020-01-01",
                 isAvailableForPurchase: true,
-                availableForPurchase: "2020-08-31",
+                availableForPurchaseAt: "2020-08-31",
                 visibleInListings: true,
                 channel: {
                   id: "Q2hhbm5lbDox",
@@ -501,9 +501,9 @@ export const sale: SaleDetailsFragment = {
             channelListings: [
               {
                 isPublished: true,
-                publicationDate: "2020-01-01",
+                publishedAt: "2020-01-01",
                 isAvailableForPurchase: true,
-                availableForPurchase: "2020-08-31",
+                availableForPurchaseAt: "2020-08-31",
                 visibleInListings: true,
                 channel: {
                   id: "Q2hhbm5lbDox",
@@ -539,9 +539,9 @@ export const sale: SaleDetailsFragment = {
             channelListings: [
               {
                 isPublished: true,
-                publicationDate: "2020-01-01",
+                publishedAt: "2020-01-01",
                 isAvailableForPurchase: true,
-                availableForPurchase: "2020-08-31",
+                availableForPurchaseAt: "2020-08-31",
                 visibleInListings: true,
                 channel: {
                   id: "Q2hhbm5lbDox",
@@ -553,9 +553,9 @@ export const sale: SaleDetailsFragment = {
               },
               {
                 isPublished: true,
-                publicationDate: "2020-01-01",
+                publishedAt: "2020-01-01",
                 isAvailableForPurchase: true,
-                availableForPurchase: "2020-08-31",
+                availableForPurchaseAt: "2020-08-31",
                 visibleInListings: true,
                 channel: {
                   id: "Q2hhbm5lbDoy",
@@ -734,11 +734,7 @@ export const orderDiscount: PromotionDetailsFragment = {
       rewardValue: "33",
       rewardValueType: RewardValueTypeEnum.FIXED,
       rewardType: RewardTypeEnum.GIFT,
-      giftIds: [
-        "UHJvZHVjdFZhcmlhbnQ6MTkz",
-        "UHJvZHVjdFZhcmlhbnQ6Mjk5",
-        "UHJvZHVjdFZhcmlhbnQ6MjA2",
-      ],
+      giftIds: ["UHJvZHVjdFZhcmlhbnQ6MTkz", "UHJvZHVjdFZhcmlhbnQ6Mjk5", "UHJvZHVjdFZhcmlhbnQ6MjA2"],
       orderPredicate: {
         discountedObjectPredicate: {
           baseSubtotalPrice: {

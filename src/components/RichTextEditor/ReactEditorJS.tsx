@@ -1,11 +1,7 @@
 import { apolloClient } from "@dashboard/graphql/client";
 import { pageMediaQuery } from "@dashboard/pages/queries";
 import createFileUploadHandler from "@dashboard/utils/handlers/fileUploadHandler";
-import EditorJS, {
-  EditorConfig,
-  OutputData,
-  ToolConstructable,
-} from "@editorjs/editorjs";
+import EditorJS, { EditorConfig, OutputData, ToolConstructable } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
 import {
   EditorCore,
@@ -112,7 +108,10 @@ class ClientEditorCore implements EditorCore {
 
   public async destroy() {
     try {
-      await this._editorJS.destroy();
+      if (this._editorJS) {
+        await this._editorJS.isReady;
+        this._editorJS.destroy();
+      }
     } catch (e) {
       /*
         Dismiss that error.
@@ -136,12 +135,7 @@ export type Props = Merge<
 >;
 
 function ReactEditorJSClient(props: Props) {
-  const { onImageUpload, onImageDelete } = props;
-  const factory = React.useCallback(
-    (config: EditorConfig) =>
-      new ClientEditorCore(config, onImageUpload, onImageDelete),
-    [],
-  );
+  const factory = React.useCallback((config: EditorConfig) => new ClientEditorCore(config, onImageUpload, onImageDelete), []);
 
   return <BaseReactEditorJS factory={factory} {...props} />;
 }

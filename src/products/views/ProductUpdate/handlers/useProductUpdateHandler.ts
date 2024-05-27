@@ -72,69 +72,53 @@ export function useProductUpdateHandler(
 ): [UseProductUpdateHandler, UseProductUpdateHandlerOpts] {
   const intl = useIntl();
   const notify = useNotifier();
-  const [variantListErrors, setVariantListErrors] = useState<
-    ProductVariantListError[]
-  >([]);
+  const [variantListErrors, setVariantListErrors] = useState<ProductVariantListError[]>([]);
   const [called, setCalled] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [updateMetadata] = useUpdateMetadataMutation({});
   const [updatePrivateMetadata] = useUpdatePrivateMetadataMutation({});
   const [updateVariants] = useProductVariantBulkUpdateMutation();
   const [createVariants] = useProductVariantBulkCreateMutation();
   const [deleteVariants] = useProductVariantBulkDeleteMutation();
-
   const [uploadFile] = useFileUploadMutation();
-
   const [updateProduct, updateProductOpts] = useProductUpdateMutation();
-  const [updateChannels, updateChannelsOpts] =
-    useProductChannelListingUpdateMutation({
-      onCompleted: data => {
-        if (!!data.productChannelListingUpdate.errors.length) {
-          data.productChannelListingUpdate.errors.forEach(error =>
-            notify({
-              status: "error",
-              text: getProductErrorMessage(error, intl),
-            }),
-          );
-        }
-      },
-    });
-
+  const [updateChannels, updateChannelsOpts] = useProductChannelListingUpdateMutation({
+    onCompleted: data => {
+      if (data.productChannelListingUpdate.errors.length) {
+        data.productChannelListingUpdate.errors.forEach(error =>
+          notify({
+            status: "error",
+            text: getProductErrorMessage(error, intl),
+          }),
+        );
+      }
+    },
+  });
   const [deleteAttributeValue] = useAttributeValueDeleteMutation();
-
   const sendMutations = async (
     data: ProductUpdateSubmitData,
   ): Promise<UseProductUpdateHandlerError[]> => {
     let errors: UseProductUpdateHandlerError[] = [];
     const variantErrors: ProductVariantListError[] = [];
-
     const uploadFilesResult = await handleUploadMultipleFiles(
       data.attributesWithNewFileValue,
       variables => uploadFile({ variables }),
     );
-
-    const deleteAttributeValuesResult =
-      await handleDeleteMultipleAttributeValues(
-        data.attributesWithNewFileValue,
-        product?.attributes,
-        variables => deleteAttributeValue({ variables }),
-      );
-
-    const updateProductChannelsData = getProductChannelsUpdateVariables(
-      product,
-      data,
+    const deleteAttributeValuesResult = await handleDeleteMultipleAttributeValues(
+      data.attributesWithNewFileValue,
+      product?.attributes,
+      variables => deleteAttributeValue({ variables }),
     );
+    const updateProductChannelsData = getProductChannelsUpdateVariables(product, data);
 
     if (hasProductChannelsUpdate(updateProductChannelsData.input)) {
       const updateChannelsResult = await updateChannels({
         variables: updateProductChannelsData,
       });
 
-      errors = [
-        ...errors,
-        ...updateChannelsResult.data.productChannelListingUpdate.errors,
-      ];
+      if (updateChannelsResult.data) {
+        errors = [...errors, ...updateChannelsResult.data.productChannelListingUpdate.errors];
+      }
     }
 
     if (data.variants.removed.length > 0) {
@@ -144,10 +128,7 @@ export function useProductUpdateHandler(
         },
       });
 
-      errors = [
-        ...errors,
-        ...deleteVaraintsResult.data.productVariantBulkDelete.errors,
-      ];
+      errors = [...errors, ...deleteVaraintsResult.data.productVariantBulkDelete.errors];
     }
 
     const updateProductResult = await updateProduct({
@@ -167,10 +148,7 @@ export function useProductUpdateHandler(
           })),
         },
       });
-
-      const createVariantsErrors = getCreateVariantMutationError(
-        createVariantsResults,
-      );
+      const createVariantsErrors = getCreateVariantMutationError(createVariantsResults);
 
       errors.push(...createVariantsErrors);
       variantErrors.push(...createVariantsErrors);
@@ -191,7 +169,6 @@ export function useProductUpdateHandler(
             errorPolicy: ErrorPolicyEnum.REJECT_FAILED_ROWS,
           },
         });
-
         const updateVariantsErrors = getVariantUpdateMutationErrors(
           updateVariantsResults,
           updateInputdData.map(data => data.id),
@@ -208,12 +185,10 @@ export function useProductUpdateHandler(
       ...mergeAttributeValueDeleteErrors(deleteAttributeValuesResult),
       ...(updateProductResult?.data?.productUpdate?.errors ?? []),
     ];
-
     setVariantListErrors(variantErrors);
 
     return errors;
   };
-
   const submit = async (data: ProductUpdateSubmitData) => {
     setCalled(true);
     setLoading(true);
@@ -236,11 +211,8 @@ export function useProductUpdateHandler(
 
     return errors;
   };
-
   const errors = updateProductOpts.data?.productUpdate.errors ?? [];
-
-  const channelsErrors =
-    updateChannelsOpts?.data?.productChannelListingUpdate?.errors ?? [];
+  const channelsErrors = updateChannelsOpts?.data?.productChannelListingUpdate?.errors ?? [];
 
   return [
     submit,
