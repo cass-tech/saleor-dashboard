@@ -135,6 +135,7 @@ export type Props = Merge<
 >;
 
 function ReactEditorJSClient(props: Props) {
+  const { onImageUpload, onImageDelete } = props;
   const factory = React.useCallback((config: EditorConfig) => new ClientEditorCore(config, onImageUpload, onImageDelete), []);
 
   return <BaseReactEditorJS factory={factory} {...props} />;
