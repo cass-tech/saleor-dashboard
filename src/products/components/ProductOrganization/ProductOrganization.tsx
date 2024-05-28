@@ -46,11 +46,10 @@ interface ProductOrganizationProps {
   onCategoryChange: (event: ChangeEvent) => void;
   onCollectionChange: (event: ChangeEvent) => void;
   onProductTypeChange?: (event: ChangeEvent) => void;
+  selectedProductCategory?: Option;
 }
 
-export const ProductOrganization: React.FC<
-  ProductOrganizationProps
-> = props => {
+export const ProductOrganization: React.FC<ProductOrganizationProps> = props => {
   const {
     canChangeType,
     categories,
@@ -72,14 +71,14 @@ export const ProductOrganization: React.FC<
     onCategoryChange,
     onCollectionChange,
     onProductTypeChange,
+    selectedProductCategory,
   } = props;
-
   const intl = useIntl();
-
   const formErrors = getFormErrors(
     ["productType", "category", "collections", "isPublished"],
     errors,
   );
+  const [categoryInputActive, setCategoryInputActive] = React.useState(false);
   const noCategoryError =
     formErrors.isPublished?.code === ProductErrorCode.PRODUCT_WITHOUT_CATEGORY
       ? formErrors.isPublished
@@ -151,10 +150,7 @@ export const ProductOrganization: React.FC<
                 : null
             }
             error={!!(formErrors.category || noCategoryError)}
-            helperText={getProductErrorMessage(
-              formErrors.category || noCategoryError,
-              intl,
-            )}
+            helperText={getProductErrorMessage(formErrors.category || noCategoryError, intl)}
             onChange={onCategoryChange}
             fetchOptions={fetchCategories}
             fetchMore={fetchMoreCategories}
@@ -163,6 +159,45 @@ export const ProductOrganization: React.FC<
               id: "ccXLVi",
               defaultMessage: "Category",
             })}
+            {...(!categoryInputActive &&
+              !disabled && {
+                width: "100%",
+                __opacity: 0,
+                position: "absolute",
+              })}
+            onFocus={() => {
+              setCategoryInputActive(true);
+            }}
+            onBlur={() => {
+              setCategoryInputActive(false);
+            }}
+            startAdornment={val => {
+              if (categoryInputActive || disabled) {
+                return undefined;
+              }
+
+              const availableCategories = selectedProductCategory
+                ? [...categories, selectedProductCategory]
+                : categories;
+
+              const adornment = val
+                ? availableCategories.find(category => category.value === val.value)?.startAdornment
+                : null;
+
+              if (!adornment) {
+                return <Text size={3}>{categoryInputDisplayValue}</Text>;
+              }
+
+              return (
+                <>
+                  {React.cloneElement(adornment as React.ReactElement, {
+                    size: 3,
+                  })}
+                  <Text size={3}>{categoryInputDisplayValue}</Text>
+                </>
+              );
+            }}
+            id="category-list"
           />
         </Box>
         <Multiselect

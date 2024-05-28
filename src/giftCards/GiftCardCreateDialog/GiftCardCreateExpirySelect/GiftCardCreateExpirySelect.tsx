@@ -39,33 +39,21 @@ interface GiftCardCreateExpirySelectProps {
   change: FormChange;
   data: Pick<
     GiftCardCreateCommonFormData,
-    | "expirySelected"
-    | "expiryPeriodType"
-    | "expiryPeriodAmount"
-    | "expiryType"
-    | "expiryDate"
+    "expirySelected" | "expiryPeriodType" | "expiryPeriodAmount" | "expiryType" | "expiryDate"
   >;
 }
 
 const GiftCardCreateExpirySelect: React.FC<GiftCardCreateExpirySelectProps> = ({
   errors,
   change,
-  data: {
-    expirySelected,
-    expiryPeriodType,
-    expiryPeriodAmount,
-    expiryType,
-    expiryDate,
-  },
+  data: { expirySelected, expiryPeriodType, expiryPeriodAmount, expiryType, expiryDate },
 }) => {
   const intl = useIntl();
   const classes = useStyles({});
-
   const translatedOptions = options.map(({ label, value }) => ({
     value,
     label: intl.formatMessage(label),
   }));
-
   const currentDate = useCurrentDate();
 
   return (
@@ -107,7 +95,7 @@ const GiftCardCreateExpirySelect: React.FC<GiftCardCreateExpirySelectProps> = ({
           )}
 
           {expiryType === "EXPIRY_PERIOD" && (
-            <div className={classes.periodField}>
+            <div data-test-id="gift-card-expire-data-fields" className={classes.periodField}>
               <TimePeriodField
                 isError={!!errors?.expiryDate}
                 helperText={getGiftCardErrorMessage(errors?.expiryDate, intl)}

@@ -26,31 +26,19 @@ const PageList: React.FC<RouteComponentProps<{}>> = ({ location }) => {
     PageListUrlSortField,
     PageListUrlSortField.title,
   );
+
   return <PageListComponent params={params} />;
 };
-
 const PageCreate: React.FC<RouteComponentProps<any>> = ({ match }) => {
   const params: PageCreateUrlQueryParams = parseQs(location.search.substr(1));
 
-  return (
-    <PageCreateComponent
-      id={decodeURIComponent(match.params.id)}
-      params={params}
-    />
-  );
+  return <PageCreateComponent id={decodeURIComponent(match.params.id)} params={params} />;
 };
-
 const PageDetails: React.FC<RouteComponentProps<any>> = ({ match }) => {
   const params: PageUrlQueryParams = parseQs(location.search.substr(1));
 
-  return (
-    <PageDetailsComponent
-      id={decodeURIComponent(match.params.id)}
-      params={params}
-    />
-  );
+  return <PageDetailsComponent id={decodeURIComponent(match.params.id)} params={params} />;
 };
-
 const Component = () => {
   const intl = useIntl();
 

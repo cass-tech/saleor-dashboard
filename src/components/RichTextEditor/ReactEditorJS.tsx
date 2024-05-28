@@ -1,11 +1,7 @@
 import { apolloClient } from "@dashboard/graphql/client";
 import { pageMediaQuery } from "@dashboard/pages/queries";
 import createFileUploadHandler from "@dashboard/utils/handlers/fileUploadHandler";
-import EditorJS, {
-  EditorConfig,
-  OutputData,
-  ToolConstructable,
-} from "@editorjs/editorjs";
+import EditorJS, { EditorConfig, OutputData, ToolConstructable } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
 import {
   EditorCore,
@@ -38,7 +34,6 @@ class ClientEditorCore implements EditorCore {
     class CustomImageTool extends ImageTool {
       removed() {
         if (deleteFile) {
-          // @ts-expect-error
           deleteFile(this._data.file.id)
             .then(() => {
               return {
@@ -47,7 +42,6 @@ class ClientEditorCore implements EditorCore {
               };
             })
             .catch(() => {
-              // @ts-expect-error
               return { success: 0, file: { url: this._data.file.url } };
             });
         }
@@ -93,6 +87,7 @@ class ClientEditorCore implements EditorCore {
           inlineToolbar: true,
         } as unknown as ToolConstructable,
       };
+
       extendTools = { ...extendTools, ...imageTool };
     }
 
@@ -112,7 +107,10 @@ class ClientEditorCore implements EditorCore {
 
   public async destroy() {
     try {
-      await this._editorJS.destroy();
+      if (this._editorJS) {
+        await this._editorJS.isReady;
+        this._editorJS.destroy();
+      }
     } catch (e) {
       /*
         Dismiss that error.
@@ -129,17 +127,13 @@ class ClientEditorCore implements EditorCore {
 
 export type Props = Merge<
   Omit<ReactEditorJSProps, "factory">,
-  Merge<
-    { onImageUpload: (file: File) => Promise<unknown> },
-    { onImageDelete: (id: string) => any }
-  >
+  Merge<{ onImageUpload: (file: File) => Promise<unknown> }, { onImageDelete: (id: string) => any }>
 >;
 
 function ReactEditorJSClient(props: Props) {
   const { onImageUpload, onImageDelete } = props;
   const factory = React.useCallback(
-    (config: EditorConfig) =>
-      new ClientEditorCore(config, onImageUpload, onImageDelete),
+    (config: EditorConfig) => new ClientEditorCore(config, onImageUpload, onImageDelete),
     [],
   );
 

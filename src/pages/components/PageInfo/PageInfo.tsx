@@ -20,7 +20,7 @@ import { useIntl } from "react-intl";
 
 import { PageData } from "../PageDetailsPage/form";
 
-export interface PageInfoProps {
+interface PageInfoProps {
   data: PageData;
   pageMedia: {
     id: string;
@@ -40,22 +40,20 @@ const useStyles = makeStyles(
   },
   { name: "PageInfo" },
 );
-
 const PageInfo: React.FC<PageInfoProps> = props => {
-  const { data, pageMedia, disabled, errors, onChange, onImageUpload } = props;
-
+  const { data, onImageUpload, pageMedia, disabled, errors, onChange } = props;
   const classes = useStyles(props);
   const intl = useIntl();
   const notify = useNotifier();
+  const { defaultValue, editorRef, isReadyForMount, handleChange } = useRichTextContext();
+  const formErrors = getFormErrors(["title", "content"], errors);
 
-  const { defaultValue, editorRef, isReadyForMount, handleChange } =
-    useRichTextContext();
   const [deletePageMedia] = usePageMediaDeleteMutation({
     onCompleted: data => {
       const imageError = data.pageMediaDelete.errors.find(
-        error =>
-          error.field === ("image" as keyof PageMediaDeleteMutationVariables),
+        error => error.field === ("image" as keyof PageMediaDeleteMutationVariables),
       );
+
       if (imageError) {
         notify({
           status: "error",
@@ -68,19 +66,14 @@ const PageInfo: React.FC<PageInfoProps> = props => {
     },
   });
 
-  const formErrors = getFormErrors(["title", "content"], errors);
-
-  if (pageMedia?.media && defaultValue?.blocks) {
+  if (pageMedia?.media) {
     defaultValue?.blocks.forEach(block => {
       if (block.type === "image") {
-        const imageName = block.data.file.url
-          .split("?")
-          .shift()
-          .split("/")
-          .pop();
+        const imageName = block.data.file.url.split("?").shift().split("/").pop();
         const pageMediaUrl = pageMedia.media.find(
           media => media.url.split("?").shift().split("/").pop() === imageName,
         );
+
         if (pageMediaUrl) {
           block.data.file.url = pageMediaUrl.url;
           block.data.file.id = pageMediaUrl.id;
@@ -90,14 +83,11 @@ const PageInfo: React.FC<PageInfoProps> = props => {
     });
   }
 
-  const handleImageDelete = (id: string) =>
-    deletePageMedia({ variables: { id } });
+  const handleImageDelete = (id: string) => deletePageMedia({ variables: { id } });
 
   return (
     <Card className={classes.root}>
-      <CardTitle
-        title={intl.formatMessage(commonMessages.generalInformations)}
-      />
+      <CardTitle title={intl.formatMessage(commonMessages.generalInformations)} />
       <CardContent>
         <TextField
           disabled={disabled}
@@ -145,5 +135,6 @@ const PageInfo: React.FC<PageInfoProps> = props => {
     </Card>
   );
 };
+
 PageInfo.displayName = "PageInfo";
 export default PageInfo;

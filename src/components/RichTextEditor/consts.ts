@@ -10,16 +10,17 @@ import Quote from "@editorjs/quote";
 import createGenericInlineTool from "editorjs-inline-tool";
 
 export class CustomImageTool extends ImageTool {
-  // eslint-disable-next-line accessor-pairs
+  protected _data: any;
+
+  private ui: any;
+
   set image(file) {
-    // @ts-expect-error
     this._data.file = file || {};
 
     if (file && file.url) {
-      // @ts-expect-error
       this.ui.fillImage(file.url);
-      // @ts-expect-error
-      this.ui.nodes.imageContainer.querySelector(".image-tool__image-picture",).id = this._data.file.id;
+      this.ui.nodes.imageContainer.querySelector(".image-tool__image-picture").id =
+        this._data.file.id;
     }
   }
 }

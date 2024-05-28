@@ -30,12 +30,7 @@ export const pageSelectedAttribute = gql`
       entityType
       valueRequired
       unit
-      choices(
-        first: $firstValues
-        after: $afterValues
-        last: $lastValues
-        before: $beforeValues
-      ) {
+      choices(first: $firstValues, after: $afterValues, last: $lastValues, before: $beforeValues) {
         ...AttributeValueList
       }
     }
@@ -80,7 +75,7 @@ export const pageDetailsFragment = gql`
     content
     seoTitle
     seoDescription
-    publicationDate
+    publishedAt
     media {
       ...PageMedia
     }

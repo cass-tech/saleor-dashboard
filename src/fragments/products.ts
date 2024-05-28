@@ -55,9 +55,9 @@ export const fragmentProductMedia = gql`
 export const channelListingProductWithoutPricingFragment = gql`
   fragment ChannelListingProductWithoutPricing on ProductChannelListing {
     isPublished
-    publicationDate
+    publishedAt
     isAvailableForPurchase
-    availableForPurchase
+    availableForPurchaseAt
     visibleInListings
     channel {
       id
@@ -256,12 +256,7 @@ export const variantAttributeFragment = gql`
     entityType
     valueRequired
     unit
-    choices(
-      first: $firstValues
-      after: $afterValues
-      last: $lastValues
-      before: $beforeValues
-    ) {
+    choices(first: $firstValues, after: $afterValues, last: $lastValues, before: $beforeValues) {
       ...AttributeValueList
     }
   }
@@ -285,9 +280,7 @@ export const fragmentVariant = gql`
     selectionAttributes: attributes(variantSelection: VARIANT_SELECTION) {
       ...SelectedVariantAttribute
     }
-    nonSelectionAttributes: attributes(
-      variantSelection: NOT_VARIANT_SELECTION
-    ) {
+    nonSelectionAttributes: attributes(variantSelection: NOT_VARIANT_SELECTION) {
       ...SelectedVariantAttribute
     }
     media {
@@ -311,7 +304,7 @@ export const fragmentVariant = gql`
       }
       channelListings {
         id
-        publicationDate
+        publishedAt
         isPublished
         channel {
           id
