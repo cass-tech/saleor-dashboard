@@ -166,6 +166,9 @@ export const voucherDetailsFragment = gql`
     applyOncePerCustomer
     onlyForStaff
     singleUse
+    variantsCount: variants {
+      totalCount
+    }
     productsCount: products {
       totalCount
     }
@@ -227,6 +230,54 @@ export const voucherDetailsFragment = gql`
         ...PageInfo
       }
     }
+    variants(after: $after, before: $before, first: $first, last: $last)
+      @include(if: $includeVariants) {
+      edges {
+        node {
+          id
+          name
+          product {
+            id
+            name
+            thumbnail {
+              url
+              __typename
+            }
+            productType {
+              id
+              name
+              __typename
+            }
+            channelListings {
+              ...ChannelListingProductWithoutPricing
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      pageInfo {
+        ...PageInfo
+        __typename
+      }
+      __typename
+    }
+  }
+`;
+
+export const promotionRuleChannelFragment = gql`
+  fragment PromotionRuleChannel on Channel {
+    id
+    isActive
+    name
+    slug
+    currencyCode
+    defaultCountry {
+      code
+      country
+    }
   }
 `;
 
@@ -236,7 +287,7 @@ export const promotionRuleDetailsFragment = gql`
     name
     description
     channels {
-      ...ChannelDetails
+      ...PromotionRuleChannel
     }
     giftIds
     rewardType

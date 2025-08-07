@@ -1,33 +1,43 @@
 // @ts-strict-ignore
+import { AppWidgets } from "@dashboard/apps/components/AppWidgets/AppWidgets";
+import { useUser } from "@dashboard/auth";
+import { hasPermission } from "@dashboard/auth/misc";
 import { ChannelCollectionData } from "@dashboard/channels/utils";
-import { collectionListUrl } from "@dashboard/collections/urls";
+import { collectionListPath, CollectionUrlQueryParams } from "@dashboard/collections/urls";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import { CardSpacer } from "@dashboard/components/CardSpacer";
+import CardSpacer from "@dashboard/components/CardSpacer";
 import ChannelsAvailabilityCard from "@dashboard/components/ChannelsAvailabilityCard";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata/Metadata";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import { SeoForm } from "@dashboard/components/SeoForm";
+import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
+import { getExtensionsItemsForCollectionDetails } from "@dashboard/extensions/getExtensionsItems";
+import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
   CollectionChannelListingErrorFragment,
   CollectionDetailsQuery,
   CollectionErrorFragment,
   PermissionEnum,
 } from "@dashboard/graphql";
+import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
+import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
+import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
+import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
+import { Box, Divider } from "@saleor/macaw-ui-next";
 import React from "react";
 import { useIntl } from "react-intl";
 
-import { ChannelProps, ListActions, PageListProps } from "../../../types";
+import { ChannelProps, PageListProps } from "../../../types";
 import CollectionDetails from "../CollectionDetails/CollectionDetails";
 import { CollectionImage } from "../CollectionImage/CollectionImage";
 import CollectionProducts from "../CollectionProducts/CollectionProducts";
 import CollectionUpdateForm, { CollectionUpdateData } from "./form";
 
-export interface CollectionDetailsPageProps extends PageListProps, ListActions, ChannelProps {
-  onAdd: () => void;
+export interface CollectionDetailsPageProps extends PageListProps, ChannelProps {
   channelsCount: number;
   channelsErrors: CollectionChannelListingErrorFragment[];
   collection: CollectionDetailsQuery["collection"];
@@ -37,10 +47,10 @@ export interface CollectionDetailsPageProps extends PageListProps, ListActions, 
   onCollectionRemove: () => void;
   onImageDelete: () => void;
   onImageUpload: (file: File) => void;
-  onProductUnassign: (id: string, event: React.MouseEvent<any>) => void;
   onSubmit: (data: CollectionUpdateData) => SubmitPromise;
   onChannelsChange: (data: ChannelCollectionData[]) => void;
   openChannelsModal: () => void;
+  params: CollectionUrlQueryParams;
 }
 
 const CollectionDetailsPage: React.FC<CollectionDetailsPageProps> = ({
@@ -60,7 +70,22 @@ const CollectionDetailsPage: React.FC<CollectionDetailsPageProps> = ({
   ...collectionProductsProps
 }: CollectionDetailsPageProps) => {
   const intl = useIntl();
+  const { lastUsedLocaleOrFallback } = useCachedLocales();
   const navigate = useNavigator();
+  const { user } = useUser();
+  const canTranslate = user && hasPermission(PermissionEnum.MANAGE_TRANSLATIONS, user);
+
+  const collectionListBackLink = useBackLinkWithState({
+    path: collectionListPath,
+  });
+
+  const { COLLECTION_DETAILS_MORE_ACTIONS, COLLECTION_DETAILS_WIDGETS } = useExtensions(
+    extensionMountPoints.COLLECTION_DETAILS,
+  );
+  const extensionMenuItems = getExtensionsItemsForCollectionDetails(
+    COLLECTION_DETAILS_MORE_ACTIONS,
+    collection?.id,
+  );
 
   return (
     <CollectionUpdateForm
@@ -72,10 +97,28 @@ const CollectionDetailsPage: React.FC<CollectionDetailsPageProps> = ({
     >
       {({ change, data, handlers, submit, isSaveDisabled }) => (
         <DetailPageLayout>
-          <TopNav href={collectionListUrl()} title={collection?.name} />
+          <TopNav href={collectionListBackLink} title={collection?.name}>
+            {canTranslate && (
+              <TranslationsButton
+                onClick={() =>
+                  navigate(
+                    languageEntityUrl(
+                      lastUsedLocaleOrFallback,
+                      TranslatableEntities.collections,
+                      collection.id,
+                    ),
+                  )
+                }
+              />
+            )}
+            {extensionMenuItems.length > 0 && (
+              <Box marginLeft={3}>
+                <TopNav.Menu items={[...extensionMenuItems]} dataTestId="menu" />
+              </Box>
+            )}
+          </TopNav>
           <DetailPageLayout.Content>
             <CollectionDetails data={data} disabled={disabled} errors={errors} onChange={change} />
-            <CardSpacer />
             <CollectionImage
               data={data}
               image={collection?.backgroundImage}
@@ -83,15 +126,13 @@ const CollectionDetailsPage: React.FC<CollectionDetailsPageProps> = ({
               onImageUpload={onImageUpload}
               onChange={change}
             />
-            <CardSpacer />
             <Metadata data={data} onChange={handlers.changeMetadata} />
-            <CardSpacer />
             <CollectionProducts
               disabled={disabled}
               collection={collection}
+              currentChannels={currentChannels}
               {...collectionProductsProps}
             />
-            <CardSpacer />
             <SeoForm
               description={data.seoDescription}
               disabled={disabled}
@@ -134,14 +175,27 @@ const CollectionDetailsPage: React.FC<CollectionDetailsPageProps> = ({
                 openModal={openChannelsModal}
               />
             </div>
+            {COLLECTION_DETAILS_WIDGETS.length > 0 && collection?.id && (
+              <>
+                <CardSpacer />
+                <Divider />
+                <AppWidgets
+                  extensions={COLLECTION_DETAILS_WIDGETS}
+                  params={{ collectionId: collection.id }}
+                />
+              </>
+            )}
           </DetailPageLayout.RightSidebar>
-          <Savebar
-            state={saveButtonBarState}
-            disabled={isSaveDisabled}
-            onCancel={() => navigate(collectionListUrl())}
-            onDelete={onCollectionRemove}
-            onSubmit={submit}
-          />
+          <Savebar>
+            <Savebar.DeleteButton onClick={onCollectionRemove} />
+            <Savebar.Spacer />
+            <Savebar.CancelButton onClick={() => navigate(collectionListBackLink)} />
+            <Savebar.ConfirmButton
+              transitionState={saveButtonBarState}
+              onClick={submit}
+              disabled={isSaveDisabled}
+            />
+          </Savebar>
         </DetailPageLayout>
       )}
     </CollectionUpdateForm>

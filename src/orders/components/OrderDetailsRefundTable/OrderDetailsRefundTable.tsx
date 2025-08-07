@@ -22,21 +22,25 @@ export const OrderDetailsRefundTable: React.FC<OrderDetailsRefundTableProps> = (
   onRefundAdd,
 }) => {
   const intl = useIntl();
-  const mergedRefunds = mergeRefunds(order?.grantedRefunds, manualRefundsExtractor(order, intl));
+  const mergedRefunds = mergeRefunds(
+    order.grantedRefunds ?? [],
+    manualRefundsExtractor(order, intl),
+  );
   const isRefundPossible = canAddRefund({
-    transactions: order?.transactions,
+    transactions: order.transactions,
     intl,
   });
 
   return (
-    <DashboardCard paddingX={6}>
-      <Box paddingTop={6} display="flex" justifyContent="space-between">
+    <DashboardCard data-test-id="order-refund-section">
+      <Box paddingTop={6} display="flex" justifyContent="space-between" paddingX={6}>
         <Text size={5} fontWeight="bold">
           <FormattedMessage {...refundGridMessages.refundSection} />
         </Text>
         <Tooltip>
           <Tooltip.Trigger>
             <Button
+              data-test-id="add-new-refund-button"
               variant="secondary"
               onClick={onRefundAdd}
               disabled={!isRefundPossible.canRefund}
@@ -53,7 +57,7 @@ export const OrderDetailsRefundTable: React.FC<OrderDetailsRefundTableProps> = (
           )}
         </Tooltip>
       </Box>
-      <GridTable height="100%" paddingX={6}>
+      <GridTable data-test-id="refund-list" height="100%" paddingX={6}>
         <GridTable.Colgroup>
           <GridTable.Col __width="1%" />
           <GridTable.Col __width="10%" />
@@ -62,11 +66,11 @@ export const OrderDetailsRefundTable: React.FC<OrderDetailsRefundTableProps> = (
           <GridTable.Col __width="20%" />
           <GridTable.Col __width="1%" />
         </GridTable.Colgroup>
-        {mergedRefunds?.map(refund => (
+        {mergedRefunds.map(refund => (
           <OrderDetailsRefundLine key={refund.id} refund={refund} orderId={orderId} />
         ))}
       </GridTable>
-      {mergedRefunds?.length === 0 && (
+      {mergedRefunds.length === 0 && (
         <Box display="flex" justifyContent="center" alignItems="center">
           <Text size={2} color="default2">
             <FormattedMessage {...refundGridMessages.noRefunds} />

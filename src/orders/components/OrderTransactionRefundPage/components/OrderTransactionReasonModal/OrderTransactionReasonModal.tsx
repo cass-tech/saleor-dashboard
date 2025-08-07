@@ -1,6 +1,6 @@
 import { DashboardModal } from "@dashboard/components/Modal";
 import { buttonMessages } from "@dashboard/intl";
-import { Button, Text, Textarea } from "@saleor/macaw-ui-next";
+import { Button, Textarea } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -27,18 +27,15 @@ export const OrderTransactionReasonModal = ({
 
   return (
     <DashboardModal open={open} onChange={onClose}>
-      <DashboardModal.Content data-test-id="refund-reason-dialog" __minWidth="300px">
-        <DashboardModal.Title display="flex" justifyContent="space-between" alignItems="center">
+      <DashboardModal.Content data-test-id="refund-reason-dialog" size="xs">
+        <DashboardModal.Header>
           <FormattedMessage
             {...(reason ? refundTableMessages.editReason : refundTableMessages.addReason)}
           />
-          <DashboardModal.Close onClose={onClose} />
-        </DashboardModal.Title>
-        <Text color="default2">
-          <FormattedMessage {...refundTableMessages.lineReasonDescription} />
-        </Text>
+        </DashboardModal.Header>
 
         <Textarea
+          data-test-id="line-refund-reason-input"
           rows={5}
           value={tempReason}
           onChange={event => setTempReason(event.target.value)}
@@ -53,7 +50,7 @@ export const OrderTransactionReasonModal = ({
               onConfirm(tempReason);
               onClose();
             }}
-            data-test-id="edit-reason-button"
+            data-test-id="confirm-button"
           >
             <FormattedMessage {...buttonMessages.confirm} />
           </Button>

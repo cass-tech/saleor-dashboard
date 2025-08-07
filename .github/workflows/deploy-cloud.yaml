@@ -5,9 +5,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write # needed by aws-actions/configure-aws-credentials
+      contents: read
     env:
+      ## backward compatibility for older versions
+      APPS_MARKETPLACE_API_URI: "https://apps.saleor.io/api/v2/saleor-apps"
+      ## backward compatibility for older versions
       API_URI: /graphql/
+
+      API_URL: /graphql/
       APP_MOUNT_URI: /dashboard/
       STATIC_URL: /dashboard/static/
       SENTRY_ORG: saleor
@@ -17,10 +25,14 @@ jobs:
       REGION: ${{ github.event.client_payload.region }}
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-      APPS_MARKETPLACE_API_URI: "https://apps.saleor.io/api/v2/saleor-apps"
+      APPS_MARKETPLACE_API_URL: "https://apps.saleor.io/api/v2/saleor-apps"
+      EXTENSIONS_API_URL: "https://apps.saleor.io/api/v1/extensions"
       IS_CLOUD_INSTANCE: true
       POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
       POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+      POSTHOG_EXCLUDED_DOMAINS: ${{ vars.POSTHOG_EXCLUDED_DOMAINS }}
+      ENABLED_SERVICE_NAME_HEADER: true
+      ONBOARDING_USER_JOINED_DATE_THRESHOLD: ${{ vars.CLOUD_ONBOARDING_USER_JOINED_DATE_THRESHOLD }}
     steps:
       - name: Check region
         if: ${{ !contains(fromJSON('["eu", "us"]'), env.REGION) }}
@@ -51,16 +63,14 @@ jobs:
         if: env.REGION == 'eu'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_CLOUD_EU_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_CLOUD_EU_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_PROD_ACCOUNT_ID }}:role/${{ secrets.AWS_DASHBOARD_EU_CICD_ROLE_NAME }}
           aws-region: eu-west-1
 
       - name: Configure AWS Credentials
         if: env.REGION == 'us'
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_CLOUD_US_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_CLOUD_US_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_PROD_ACCOUNT_ID }}:role/${{ secrets.AWS_DASHBOARD_US_CICD_ROLE_NAME }}
           aws-region: us-east-1
 
       - name: Deploy

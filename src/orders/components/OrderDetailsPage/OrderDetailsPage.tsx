@@ -1,29 +1,31 @@
 // @ts-strict-ignore
-import {
-  extensionMountPoints,
-  mapToMenuItemsForOrderDetails,
-  useExtensions,
-} from "@dashboard/apps/hooks/useExtensions";
+import { FetchResult } from "@apollo/client";
+import { AppWidgets } from "@dashboard/apps/components/AppWidgets/AppWidgets";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import CardMenu from "@dashboard/components/CardMenu";
 import { CardSpacer } from "@dashboard/components/CardSpacer";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { useDevModeContext } from "@dashboard/components/DevModePanel/hooks";
 import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata, MetadataIdSchema } from "@dashboard/components/Metadata";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
+import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
+import { getExtensionsItemsForOrderDetails } from "@dashboard/extensions/getExtensionsItems";
+import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
   OrderDetailsFragment,
   OrderDetailsQuery,
   OrderErrorFragment,
+  OrderNoteUpdateMutation,
   OrderStatus,
   TransactionActionEnum,
 } from "@dashboard/graphql";
+import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { defaultGraphiQLQuery } from "@dashboard/orders/queries";
 import { orderListUrl } from "@dashboard/orders/urls";
+import { Divider } from "@saleor/macaw-ui-next";
 import React from "react";
 import { useIntl } from "react-intl";
 
@@ -75,6 +77,8 @@ export interface OrderDetailsPageProps {
   onShippingAddressEdit: () => any;
   onOrderCancel: () => any;
   onNoteAdd: (data: HistoryFormData) => any;
+  onNoteUpdate: (id: string, message: string) => Promise<FetchResult<OrderNoteUpdateMutation>>;
+  onNoteUpdateLoading: boolean;
   onProfileView: () => any;
   onOrderReturn: () => any;
   onInvoiceClick: (invoiceId: string) => any;
@@ -98,6 +102,8 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = props => {
     onFulfillmentCancel,
     onFulfillmentTrackingNumberUpdate,
     onNoteAdd,
+    onNoteUpdate,
+    onNoteUpdateLoading,
     onOrderCancel,
     onOrderFulfill,
     onPaymentCapture,
@@ -163,14 +169,23 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = props => {
       shouldExist: hasAnyItemsReplaceable(order),
     },
   ]);
-  const { ORDER_DETAILS_MORE_ACTIONS } = useExtensions(extensionMountPoints.ORDER_DETAILS);
-  const extensionMenuItems = mapToMenuItemsForOrderDetails(ORDER_DETAILS_MORE_ACTIONS, order?.id);
+  const { ORDER_DETAILS_MORE_ACTIONS, ORDER_DETAILS_WIDGETS } = useExtensions(
+    extensionMountPoints.ORDER_DETAILS,
+  );
+  const extensionMenuItems = getExtensionsItemsForOrderDetails(
+    ORDER_DETAILS_MORE_ACTIONS,
+    order?.id,
+  );
   const context = useDevModeContext();
   const openPlaygroundURL = () => {
     context.setDevModeContent(defaultGraphiQLQuery);
     context.setVariables(`{ "id": "${order?.id}" }`);
     context.setDevModeVisibility(true);
   };
+
+  const backLinkUrl = useBackLinkWithState({
+    path: orderListUrl(),
+  });
 
   return (
     <Form confirmLeave initial={initial} onSubmit={handleSubmit} mergeData={false}>
@@ -179,9 +194,10 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = props => {
 
         return (
           <DetailPageLayout>
-            <TopNav href={orderListUrl()} title={<Title order={order} />}>
-              <CardMenu
-                menuItems={[
+            <TopNav href={backLinkUrl} title={<Title order={order} />}>
+              <TopNav.Menu
+                dataTestId="menu"
+                items={[
                   ...selectCardMenuItems,
                   ...extensionMenuItems,
                   {
@@ -255,8 +271,10 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = props => {
               />
               <OrderHistory
                 history={order?.events}
+                onNoteUpdateLoading={onNoteUpdateLoading}
                 orderCurrency={order?.total?.gross.currency}
                 onNoteAdd={onNoteAdd}
+                onNoteUpdate={onNoteUpdate}
               />
             </DetailPageLayout.Content>
             <DetailPageLayout.RightSidebar>
@@ -284,14 +302,25 @@ const OrderDetailsPage: React.FC<OrderDetailsPageProps> = props => {
                 </>
               )}
               <OrderCustomerNote note={maybe(() => order.customerNote)} />
+              {ORDER_DETAILS_WIDGETS.length > 0 && order?.id && (
+                <>
+                  <CardSpacer />
+                  <Divider />
+                  <AppWidgets extensions={ORDER_DETAILS_WIDGETS} params={{ orderId: order.id }} />
+                </>
+              )}
             </DetailPageLayout.RightSidebar>
-            <Savebar
-              labels={saveLabel}
-              onCancel={() => navigate(orderListUrl())}
-              onSubmit={submit}
-              state={saveButtonBarState}
-              disabled={allowSave()}
-            />
+            <Savebar>
+              <Savebar.Spacer />
+              <Savebar.CancelButton onClick={() => navigate(orderListUrl())} />
+              <Savebar.ConfirmButton
+                transitionState={saveButtonBarState}
+                onClick={submit}
+                disabled={allowSave()}
+              >
+                {saveLabel?.confirm}
+              </Savebar.ConfirmButton>
+            </Savebar>
           </DetailPageLayout>
         );
       }}

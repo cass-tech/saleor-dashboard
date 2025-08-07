@@ -1,8 +1,11 @@
 // @ts-strict-ignore
+import { QueryResult } from "@apollo/client";
 import {
   getReferenceAttributeEntityTypeFromAttribute,
   mergeAttributeValues,
 } from "@dashboard/attributes/utils/data";
+import { useUser } from "@dashboard/auth";
+import { hasPermission } from "@dashboard/auth/misc";
 import { ChannelPriceData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
@@ -18,21 +21,29 @@ import Grid from "@dashboard/components/Grid";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { MetadataFormData } from "@dashboard/components/Metadata";
 import { Metadata } from "@dashboard/components/Metadata/Metadata";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import {
+  PermissionEnum,
   ProductChannelListingErrorFragment,
   ProductErrorWithAttributesFragment,
   ProductVariantFragment,
   SearchAttributeValuesQuery,
+  SearchCategoriesQuery,
+  SearchCollectionsQuery,
   SearchPagesQuery,
   SearchProductsQuery,
-  WarehouseFragment,
+  SearchWarehousesQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { VariantDetailsChannelsAvailabilityCard } from "@dashboard/products/components/ProductVariantChannels/ChannelsAvailabilityCard";
 import { productUrl } from "@dashboard/products/urls";
 import { getSelectedMedia } from "@dashboard/products/utils/data";
+import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
+import { productVariantUrl } from "@dashboard/translations/urls";
+import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
 import { FetchMoreProps, RelayToFlat, ReorderAction } from "@dashboard/types";
+import { mapEdgesToItems } from "@dashboard/utils/maps";
+import { Box } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, useIntl } from "react-intl";
 
@@ -99,9 +110,10 @@ interface ProductVariantPageProps {
   placeholderImage?: string;
   saveButtonBarState: ConfirmButtonTransitionState;
   variant?: ProductVariantFragment;
-  warehouses: WarehouseFragment[];
   referencePages?: RelayToFlat<SearchPagesQuery["search"]>;
   referenceProducts?: RelayToFlat<SearchProductsQuery["search"]>;
+  referenceCategories?: RelayToFlat<SearchCategoriesQuery["search"]>;
+  referenceCollections?: RelayToFlat<SearchCollectionsQuery["search"]>;
   attributeValues: RelayToFlat<SearchAttributeValuesQuery["attribute"]["choices"]>;
   fetchMoreReferencePages?: FetchMoreProps;
   fetchMoreReferenceProducts?: FetchMoreProps;
@@ -119,6 +131,8 @@ interface ProductVariantPageProps {
   onSubmit: (data: ProductVariantUpdateSubmitData) => any;
   onSetDefaultVariant: () => any;
   onWarehouseConfigure: () => any;
+  fetchMoreWarehouses: () => void;
+  searchWarehousesResult: QueryResult<SearchWarehousesQuery>;
 }
 
 const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
@@ -133,9 +147,10 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
   placeholderImage,
   saveButtonBarState,
   variant,
-  warehouses,
   referencePages = [],
   referenceProducts = [],
+  referenceCategories = [],
+  referenceCollections = [],
   attributeValues,
   onDelete,
   onSubmit,
@@ -154,8 +169,13 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
   fetchMoreAttributeValues,
   onCloseDialog,
   onAttributeSelectBlur,
+  fetchMoreWarehouses,
+  searchWarehousesResult,
 }) => {
   const intl = useIntl();
+  const { user } = useUser();
+  const canTranslate = user && hasPermission(PermissionEnum.MANAGE_TRANSLATIONS, user);
+  const { lastUsedLocaleOrFallback } = useCachedLocales();
   const navigate = useNavigator();
   const { isOpen: isManageChannelsModalOpen, toggle: toggleManageChannels } = useManageChannels();
   const [isModalOpened, setModalStatus] = React.useState(false);
@@ -193,14 +213,22 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
     <DetailPageLayout gridTemplateColumns={1}>
       <TopNav href={productUrl(productId)} title={header}>
         {variant?.product?.defaultVariant?.id !== variant?.id && (
-          <ProductVariantSetDefault onSetDefaultVariant={onSetDefaultVariant} />
+          <Box marginRight={3}>
+            <ProductVariantSetDefault onSetDefaultVariant={onSetDefaultVariant} />
+          </Box>
+        )}
+        {canTranslate && (
+          <TranslationsButton
+            onClick={() =>
+              navigate(productVariantUrl(lastUsedLocaleOrFallback, productId, variant?.id))
+            }
+          />
         )}
       </TopNav>
       <DetailPageLayout.Content>
         <ProductVariantUpdateForm
           variant={variant}
           onSubmit={onSubmit}
-          warehouses={warehouses}
           currentChannels={channels}
           referencePages={referencePages}
           referenceProducts={referenceProducts}
@@ -228,6 +256,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
             );
             const media = getSelectedMedia(productMedia, data.media);
             const errors = [...apiErrors, ...validationErrors];
+            const priceVariantErrors = [...channelErrors, ...validationErrors];
 
             return (
               <>
@@ -315,7 +344,7 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                         ...channel.data,
                         ...channel.value,
                       }))}
-                      errors={channelErrors}
+                      errors={priceVariantErrors}
                       loading={loading}
                       onChange={handlers.changeChannels}
                     />
@@ -341,29 +370,37 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                         ...channel.data,
                         ...channel.value,
                       }))}
+                      warehouses={mapEdgesToItems(searchWarehousesResult?.data?.search) ?? []}
+                      fetchMoreWarehouses={fetchMoreWarehouses}
+                      hasMoreWarehouses={
+                        searchWarehousesResult?.data?.search?.pageInfo?.hasNextPage
+                      }
                       data={data}
                       disabled={loading}
                       hasVariants={true}
                       errors={errors}
                       stocks={data.stocks}
-                      warehouses={warehouses}
                       onChange={handlers.changeStock}
                       onFormDataChange={change}
                       onWarehouseStockAdd={handlers.addStock}
                       onWarehouseStockDelete={handlers.deleteStock}
                       onWarehouseConfigure={onWarehouseConfigure}
+                      isCreate={false}
                     />
                     <CardSpacer />
                     <Metadata data={data} onChange={handlers.changeMetadata} />
                   </div>
                 </Grid>
-                <Savebar
-                  disabled={isSaveDisabled}
-                  state={saveButtonBarState}
-                  onCancel={() => navigate(productUrl(productId))}
-                  onDelete={onDelete}
-                  onSubmit={submit}
-                />
+                <Savebar>
+                  <Savebar.DeleteButton onClick={onDelete} />
+                  <Savebar.Spacer />
+                  <Savebar.CancelButton onClick={() => navigate(productUrl(productId))} />
+                  <Savebar.ConfirmButton
+                    transitionState={saveButtonBarState}
+                    onClick={submit}
+                    disabled={isSaveDisabled}
+                  />
+                </Savebar>
                 {canOpenAssignReferencesAttributeDialog && (
                   <AssignAttributeValueDialog
                     entityType={getReferenceAttributeEntityTypeFromAttribute(
@@ -373,6 +410,8 @@ const ProductVariantPage: React.FC<ProductVariantPageProps> = ({
                     confirmButtonState={"default"}
                     products={referenceProducts}
                     pages={referencePages}
+                    collections={referenceCollections}
+                    categories={referenceCategories}
                     attribute={data.attributes.find(({ id }) => id === assignReferencesAttributeId)}
                     hasMore={handlers.fetchMoreReferences?.hasMore}
                     open={canOpenAssignReferencesAttributeDialog}

@@ -1,9 +1,10 @@
 import { defineMessages } from "react-intl";
 
+/** @deprecated use messages from extensions/ */
 export default defineMessages({
   deactivateAppTitle: {
-    id: "yMi8I8",
-    defaultMessage: "Dectivate App",
+    id: "0d6W6p",
+    defaultMessage: "Deactivate App",
     description: "dialog header",
   },
   deactivateApp: {

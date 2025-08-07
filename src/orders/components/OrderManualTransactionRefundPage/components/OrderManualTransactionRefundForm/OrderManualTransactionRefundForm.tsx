@@ -1,4 +1,4 @@
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import {
   OrderTransactionRequestActionMutation,
   TransactionActionEnum,
@@ -7,6 +7,7 @@ import {
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useNotifier from "@dashboard/hooks/useNotifier";
+import { refundSavebarMessages } from "@dashboard/orders/components/OrderTransactionRefundPage/messages";
 import { orderUrl } from "@dashboard/orders/urls";
 import {
   getOrderTransactionErrorMessage,
@@ -75,12 +76,17 @@ export const OrderManualTransactionRefundForm = ({
       <form id="manual-refund-form" onSubmit={methods.handleSubmit(handleSubmit)}>
         {children}
 
-        <Savebar
-          disabled={disabled}
-          onCancel={() => navigate(orderUrl(orderId))}
-          onSubmit={methods.handleSubmit(handleSubmit)}
-          state={manualRefundOpts.status}
-        />
+        <Savebar>
+          <Savebar.Spacer />
+          <Savebar.CancelButton onClick={() => navigate(orderUrl(orderId))} />
+          <Savebar.ConfirmButton
+            transitionState={manualRefundOpts.status}
+            onClick={methods.handleSubmit(handleSubmit)}
+            disabled={disabled}
+          >
+            {intl.formatMessage(refundSavebarMessages.transferFunds)}
+          </Savebar.ConfirmButton>
+        </Savebar>
       </form>
     </FormProvider>
   );

@@ -23,6 +23,10 @@ export const orderListQuery = gql`
           billingAddress {
             ...Address
           }
+          channel {
+            name
+            id
+          }
           created
           id
           number
@@ -37,6 +41,7 @@ export const orderListQuery = gql`
             }
           }
           userEmail
+          chargeStatus
         }
       }
       pageInfo {
@@ -72,6 +77,10 @@ export const orderDraftListQuery = gql`
             ...Address
           }
           created
+          channel {
+            name
+            id
+          }
           id
           number
           paymentStatus
@@ -118,7 +127,7 @@ export const orderDetailsQuery = gql`
 `;
 
 export const orderDetailsWithMetadataQuery = gql`
-  query OrderDetailsWithMetadata($id: ID!, $isStaffUser: Boolean!) {
+  query OrderDetailsWithMetadata($id: ID!, $hasManageProducts: Boolean!) {
     order(id: $id) {
       ...OrderDetailsWithMetadata
     }
@@ -132,6 +141,16 @@ export const orderDetailsWithMetadataQuery = gql`
       fulfillmentAutoApprove
       availablePaymentGateways {
         ...PaymentGateway
+      }
+    }
+  }
+`;
+
+export const orderLinesMetadata = gql`
+  query OrderLinesMetadata($id: ID!, $hasManageProducts: Boolean!) {
+    order(id: $id) {
+      lines {
+        ...OrderLineMetadataDetails
       }
     }
   }

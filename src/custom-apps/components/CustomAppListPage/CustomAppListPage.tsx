@@ -1,4 +1,5 @@
 import DeactivatedText from "@dashboard/apps/components/DeactivatedText";
+import { useContextualLink } from "@dashboard/components/AppLayout/ContextualLinks/useContextualLink";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { ListPageLayout } from "@dashboard/components/Layouts";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
@@ -9,9 +10,9 @@ import { AppListItemFragment } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
 import { renderCollection } from "@dashboard/misc";
-import { TableBody, TableCell, Typography } from "@material-ui/core";
-import { DeleteIcon, IconButton, ResponsiveTable } from "@saleor/macaw-ui";
-import { Box, Button, Text } from "@saleor/macaw-ui-next";
+import { TableBody, TableCell } from "@material-ui/core";
+import { ResponsiveTable } from "@saleor/macaw-ui";
+import { Box, Button, Text, TrashBinIcon } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -32,11 +33,13 @@ const CustomAppListPage: React.FC<CustomAppListPageProps> = ({
   const intl = useIntl();
   const classes = useStyles();
   const navigate = useNavigator();
+  const subtitle = useContextualLink("extending_saleor");
 
   return (
     <ListPageLayout>
       <TopNav
         title={intl.formatMessage(sectionNames.webhooksAndEvents)}
+        subtitle={subtitle}
         href={configurationMenuUrl}
       >
         <Button
@@ -85,13 +88,11 @@ const CustomAppListPage: React.FC<CustomAppListPageProps> = ({
                     </TableCell>
                     <TableCell className={classes.colAction}>
                       <TableButtonWrapper>
-                        <IconButton
+                        <Button
+                          icon={<TrashBinIcon />}
                           variant="secondary"
-                          color="primary"
                           onClick={() => onRemove(app.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        />
                       </TableButtonWrapper>
                     </TableCell>
                   </TableRowLink>
@@ -101,13 +102,13 @@ const CustomAppListPage: React.FC<CustomAppListPageProps> = ({
               () => (
                 <TableRowLink className={classes.tableRow}>
                   <TableCell className={classes.colName}>
-                    <Typography className={classes.text} variant="body2">
+                    <Text className={classes.text} fontSize={3}>
                       <FormattedMessage
                         id="voRaz3"
                         defaultMessage="Your custom-created apps will be shown here."
                         description="custom apps content"
                       />
-                    </Typography>
+                    </Text>
                   </TableCell>
                 </TableRowLink>
               ),

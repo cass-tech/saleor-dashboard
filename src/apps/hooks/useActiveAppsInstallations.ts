@@ -12,6 +12,7 @@ import { useEffect, useRef } from "react";
 
 interface UseActiveAppsInstallations {
   appsInProgressData: AppsInstallationsQuery | undefined;
+  appInProgressLoading: boolean;
   appsInProgressRefetch: () => void;
   appsRefetch: () => void;
   removeInProgressAppNotify: () => void;
@@ -21,9 +22,11 @@ interface UseActiveAppsInstallations {
   onRemoveInProgressAppSuccess: () => void;
 }
 
+/** @deprecated use hook from extensions/ */
 function useActiveAppsInstallations({
   appsInProgressData,
   appsInProgressRefetch,
+  appInProgressLoading,
   appsRefetch,
   installedAppNotify,
   removeInProgressAppNotify,
@@ -130,7 +133,7 @@ function useActiveAppsInstallations({
   useEffect(() => {
     const appsInProgress = appsInProgressData?.appsInstallations || [];
 
-    if (activeInstallations.length && !!appsInProgressData) {
+    if (activeInstallations.length && !appInProgressLoading) {
       let newAppInstalled = false;
 
       activeInstallations.forEach(installation => {
@@ -162,8 +165,14 @@ function useActiveAppsInstallations({
   return {
     handleAppInstallRetry,
     handleRemoveInProgress,
-    retryInstallAppOpts,
-    deleteInProgressAppOpts,
+    retryInstallAppOpts: {
+      status: retryInstallAppOpts.status,
+      loading: retryInstallAppOpts.loading,
+    },
+    deleteInProgressAppOpts: {
+      status: deleteInProgressAppOpts.status,
+      loading: deleteInProgressAppOpts.loading,
+    },
   };
 }
 export default useActiveAppsInstallations;

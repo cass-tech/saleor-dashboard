@@ -1,10 +1,8 @@
-// import { isLimitReached } from "@dashboard/utils/limits";
 import { ChannelData } from "@dashboard/channels/utils";
 import { ColumnPicker } from "@dashboard/components/Datagrid/ColumnPicker/ColumnPicker";
 import { useColumns } from "@dashboard/components/Datagrid/ColumnPicker/useColumns";
 import Datagrid, { GetCellContentOpts } from "@dashboard/components/Datagrid/Datagrid";
 import { DatagridChangeOpts } from "@dashboard/components/Datagrid/hooks/useDatagridChange";
-import { Choice } from "@dashboard/components/SingleSelectField";
 import {
   AttributeInputTypeEnum,
   ProductDetailsVariantFragment,
@@ -19,9 +17,11 @@ import { ProductVariantListError } from "@dashboard/products/views/ProductUpdate
 import { mapEdgesToItems } from "@dashboard/utils/maps";
 import { Item } from "@glideapps/glide-data-grid";
 import { Button } from "@saleor/macaw-ui";
+import { Option } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { ProductVariantsHeader } from "./components/ProductVariantsHeader";
 import {
   useAttributesAdapter,
   useChannelAdapter,
@@ -39,7 +39,8 @@ interface ProductVariantsProps {
   variantAttributes: ProductFragment["productType"]["variantAttributes"];
   variants: ProductDetailsVariantFragment[];
   productName: string;
-  onAttributeValuesSearch: (id: string, query: string) => Promise<Array<Choice<string, string>>>;
+  productId: string;
+  onAttributeValuesSearch: (id: string, query: string) => Promise<Option[]>;
   onChange: (data: DatagridChangeOpts) => void;
   onRowClick: (id: string) => void;
 }
@@ -50,11 +51,13 @@ export const ProductVariants: React.FC<ProductVariantsProps> = ({
   variants,
   variantAttributes,
   productName,
+  productId,
   onAttributeValuesSearch,
   onChange,
   onRowClick,
 }) => {
   const intl = useIntl();
+
   // https://github.com/saleor/saleor-dashboard/issues/4165
   const { data: warehousesData } = useWarehouseListQuery({
     variables: {
@@ -172,12 +175,10 @@ export const ProductVariants: React.FC<ProductVariantsProps> = ({
 
   return (
     <Datagrid
-      addButtonLabel={intl.formatMessage({
-        defaultMessage: "Add variant",
-        id: "3C3Nj5",
-        description: "button",
-      })}
       fillHandle={true}
+      renderHeader={props => (
+        <ProductVariantsHeader {...props} productId={productId} productName={productName} />
+      )}
       availableColumns={visibleColumns}
       emptyText={intl.formatMessage(messages.empty)}
       getCellContent={getCellContent}
@@ -211,10 +212,6 @@ export const ProductVariants: React.FC<ProductVariantsProps> = ({
           side="left"
         />
       )}
-      title={intl.formatMessage(messages.title)}
-      fullScreenTitle={intl.formatMessage(messages.fullScreenTitle, {
-        name: productName,
-      })}
       onChange={onChange}
       recentlyAddedColumn={recentlyAddedColumn}
     />

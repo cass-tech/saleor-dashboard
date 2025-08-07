@@ -103,6 +103,8 @@ class ClientEditorCore implements EditorCore {
   }
 
   public async save() {
+    await this._editorJS.isReady;
+
     return this._editorJS.save();
   }
 

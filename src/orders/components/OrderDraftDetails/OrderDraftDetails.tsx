@@ -1,6 +1,5 @@
 // @ts-strict-ignore
-import { Button } from "@dashboard/components/Button";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import {
   ChannelUsabilityDataQuery,
   OrderDetailsFragment,
@@ -11,7 +10,7 @@ import {
   OrderDiscountContext,
   OrderDiscountContextConsumerProps,
 } from "@dashboard/products/components/OrderDiscountProviders/OrderDiscountProvider";
-import { Card, CardContent } from "@material-ui/core";
+import { Button } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -47,22 +46,23 @@ const OrderDraftDetails: React.FC<OrderDraftDetailsProps> = ({
   const areProductsInChannel = !!channelUsabilityData?.products.totalCount;
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage({
-          id: "18wvf7",
-          defaultMessage: "Order Details",
-          description: "section header",
-        })}
-        toolbar={
-          isChannelActive &&
-          areProductsInChannel && (
-            <Button variant="tertiary" onClick={onOrderLineAdd} data-test-id="add-products-button">
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "18wvf7",
+            defaultMessage: "Order Details",
+            description: "section header",
+          })}
+        </DashboardCard.Title>
+        <DashboardCard.Toolbar>
+          {isChannelActive && areProductsInChannel && (
+            <Button variant="secondary" onClick={onOrderLineAdd} data-test-id="add-products-button">
               <FormattedMessage id="C50ahv" defaultMessage="Add products" description="button" />
             </Button>
-          )
-        }
-      />
+          )}
+        </DashboardCard.Toolbar>
+      </DashboardCard.Header>
       <OrderDraftDetailsProducts
         order={order}
         errors={errors}
@@ -72,7 +72,7 @@ const OrderDraftDetails: React.FC<OrderDraftDetailsProps> = ({
         onShowMetadata={onShowMetadata}
       />
       {maybe(() => order.lines.length) !== 0 && (
-        <CardContent>
+        <DashboardCard.Content>
           <OrderDiscountContext.Consumer>
             {(orderDiscountProps: OrderDiscountContextConsumerProps) => (
               <OrderDraftDetailsSummary
@@ -83,9 +83,9 @@ const OrderDraftDetails: React.FC<OrderDraftDetailsProps> = ({
               />
             )}
           </OrderDiscountContext.Consumer>
-        </CardContent>
+        </DashboardCard.Content>
       )}
-    </Card>
+    </DashboardCard>
   );
 };
 

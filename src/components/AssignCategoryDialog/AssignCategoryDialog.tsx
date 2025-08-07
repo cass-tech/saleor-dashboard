@@ -1,18 +1,26 @@
 // @ts-strict-ignore
-import { SearchCategoriesQuery } from "@dashboard/graphql";
-import { RelayToFlat } from "@dashboard/types";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import AssignContainerDialog, { AssignContainerDialogProps } from "../AssignContainerDialog";
 import { messages } from "./messages";
 
+type Categories = {
+  id: string;
+  name: string;
+}[];
+
 interface AssignCategoryDialogProps
   extends Omit<AssignContainerDialogProps, "containers" | "labels"> {
-  categories: RelayToFlat<SearchCategoriesQuery["search"]>;
+  categories: Categories | null;
+  labels?: Partial<AssignContainerDialogProps["labels"]>;
 }
 
-const AssignCategoryDialog: React.FC<AssignCategoryDialogProps> = ({ categories, ...rest }) => {
+const AssignCategoryDialog: React.FC<AssignCategoryDialogProps> = ({
+  categories,
+  labels,
+  ...rest
+}) => {
   const intl = useIntl();
 
   return (
@@ -23,6 +31,7 @@ const AssignCategoryDialog: React.FC<AssignCategoryDialogProps> = ({ categories,
         label: intl.formatMessage(messages.assignCategoryDialogLabel),
         placeholder: intl.formatMessage(messages.assignCategoryDialogPlaceholder),
         confirmBtn: intl.formatMessage(messages.confirmButton),
+        ...labels,
       }}
       {...rest}
     />

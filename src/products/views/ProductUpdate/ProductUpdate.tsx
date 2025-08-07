@@ -28,7 +28,6 @@ import { getProductErrorMessage } from "@dashboard/utils/errors";
 import useAttributeValueSearchHandler from "@dashboard/utils/handlers/attributeValueSearchHandler";
 import createDialogActionHandlers from "@dashboard/utils/handlers/dialogActionHandlers";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
-import { DialogContentText } from "@material-ui/core";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -253,7 +252,7 @@ export const ProductUpdate: React.FC<ProductUpdateProps> = ({ id, params }) => {
         onMediaUrlUpload={handleMediaUrlUpload}
         onSubmit={submit}
         onVariantShow={variantId =>
-          navigate(productVariantEditUrl(product.id, variantId), {
+          navigate(productVariantEditUrl(variantId), {
             resetScroll: true,
           })
         }
@@ -265,6 +264,8 @@ export const ProductUpdate: React.FC<ProductUpdateProps> = ({ id, params }) => {
         onAssignReferencesClick={handleAssignAttributeReferenceClick}
         referencePages={mapEdgesToItems(searchPagesOpts?.data?.search) || []}
         referenceProducts={mapEdgesToItems(searchProductsOpts?.data?.search) || []}
+        referenceCategories={mapEdgesToItems(searchCategoriesOpts?.data?.search) || []}
+        referenceCollections={mapEdgesToItems(searchCollectionsOpts?.data?.search) || []}
         fetchReferencePages={searchPages}
         fetchMoreReferencePages={fetchMoreReferencePages}
         fetchReferenceProducts={searchProducts}
@@ -282,12 +283,10 @@ export const ProductUpdate: React.FC<ProductUpdateProps> = ({ id, params }) => {
         variant="delete"
         title={intl.formatMessage(messages.deleteProductDialogTitle)}
       >
-        <DialogContentText>
-          <FormattedMessage
-            {...messages.deleteProductDialogSubtitle}
-            values={{ name: product?.name }}
-          />
-        </DialogContentText>
+        <FormattedMessage
+          {...messages.deleteProductDialogSubtitle}
+          values={{ name: product?.name }}
+        />
       </ActionDialog>
     </>
   );

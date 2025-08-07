@@ -1,8 +1,7 @@
-import CardTitle from "@dashboard/components/CardTitle";
-import RadioGroupField from "@dashboard/components/RadioGroupField";
+import { DashboardCard } from "@dashboard/components/Card";
 import { AttributeTypeEnum } from "@dashboard/graphql";
-import { Card, CardContent, Typography } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
+import { Box, RadioGroup, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
@@ -48,57 +47,64 @@ const AttributeOrganization: React.FC<AttributeOrganizationProps> = props => {
   const intl = useIntl();
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage({
-          id: "nwvQPg",
-          defaultMessage: "Organization",
-          description: "section header",
-        })}
-      />
-      <CardContent>
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "nwvQPg",
+            defaultMessage: "Organization",
+            description: "section header",
+          })}
+        </DashboardCard.Title>
+      </DashboardCard.Header>
+
+      <DashboardCard.Content>
         {canChangeType ? (
-          <RadioGroupField
-            choices={[
-              {
-                label: intl.formatMessage(messages.productAttribute),
-                value: AttributeTypeEnum.PRODUCT_TYPE,
-              },
-              {
-                label: intl.formatMessage(messages.contentAttribute),
-                value: AttributeTypeEnum.PAGE_TYPE,
-              },
-            ]}
-            disabled={disabled}
-            label={
-              <>
-                <FormattedMessage id="v1pNHW" defaultMessage="Attribute Class" />
-                <Typography variant="caption">
-                  <FormattedMessage
-                    id="ErNH3D"
-                    defaultMessage="Define where this attribute should be used in Saleor system"
-                  />
-                </Typography>
-              </>
-            }
-            name={"type" as keyof FormData}
+          <RadioGroup
+            label={intl.formatMessage({
+              id: "T0lfLH",
+              defaultMessage: "Define where this attribute should be used in Saleor system",
+              description: "Define where this attribute should be used in Saleor system",
+            })}
+            size="medium"
             value={data.type as AttributeTypeEnum}
-            onChange={onChange}
-          />
+            onValueChange={value => {
+              onChange({ target: { name: "type", value } } as React.ChangeEvent<HTMLInputElement>);
+            }}
+            disabled={disabled}
+          >
+            <Box marginTop={2}>
+              <RadioGroup.Item
+                id={AttributeTypeEnum.PRODUCT_TYPE}
+                value={AttributeTypeEnum.PRODUCT_TYPE}
+                data-test-id={AttributeTypeEnum.PRODUCT_TYPE}
+                marginBottom={2}
+              >
+                <Text size={2}>{intl.formatMessage(messages.productAttribute)}</Text>
+              </RadioGroup.Item>
+              <RadioGroup.Item
+                id={AttributeTypeEnum.PAGE_TYPE}
+                value={AttributeTypeEnum.PAGE_TYPE}
+                data-test-id={AttributeTypeEnum.PAGE_TYPE}
+              >
+                <Text size={2}>{intl.formatMessage(messages.contentAttribute)}</Text>
+              </RadioGroup.Item>
+            </Box>
+          </RadioGroup>
         ) : (
           <>
-            <Typography className={classes.label} variant="caption">
+            <Text className={classes.label} size={2} fontWeight="light" display="block">
               <FormattedMessage id="v1pNHW" defaultMessage="Attribute Class" />
-            </Typography>
-            <Typography>
+            </Text>
+            <Text>
               {data.type === AttributeTypeEnum.PRODUCT_TYPE
                 ? intl.formatMessage(messages.productAttribute)
                 : intl.formatMessage(messages.contentAttribute)}
-            </Typography>
+            </Text>
           </>
         )}
-      </CardContent>
-    </Card>
+      </DashboardCard.Content>
+    </DashboardCard>
   );
 };
 

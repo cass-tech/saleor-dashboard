@@ -1,5 +1,7 @@
-import { attributeListUrl } from "@dashboard/attributes/urls";
+import { attributeListPath } from "@dashboard/attributes/urls";
 import { ATTRIBUTE_TYPES_WITH_DEDICATED_VALUES } from "@dashboard/attributes/utils/data";
+import { useUser } from "@dashboard/auth";
+import { hasPermission } from "@dashboard/auth/misc";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
@@ -7,7 +9,7 @@ import Form from "@dashboard/components/Form";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata/Metadata";
 import { MetadataFormData } from "@dashboard/components/Metadata/types";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import { ListSettingsUpdate } from "@dashboard/components/TablePagination";
 import {
   AttributeDetailsFragment,
@@ -17,9 +19,14 @@ import {
   AttributeInputTypeEnum,
   AttributeTypeEnum,
   MeasurementUnitsEnum,
+  PermissionEnum,
 } from "@dashboard/graphql";
+import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
+import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
+import { languageEntityUrl, TranslatableEntities } from "@dashboard/translations/urls";
+import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
 import { ListSettings, ReorderAction } from "@dashboard/types";
 import { mapEdgesToItems, mapMetadataItemToInput } from "@dashboard/utils/maps";
 import useMetadataChangeTrigger from "@dashboard/utils/metadata/useMetadataChangeTrigger";
@@ -90,6 +97,9 @@ const AttributePage: React.FC<AttributePageProps> = ({
   children,
 }) => {
   const intl = useIntl();
+  const { lastUsedLocaleOrFallback } = useCachedLocales();
+  const { user } = useUser();
+  const canTranslate = user && hasPermission(PermissionEnum.MANAGE_TRANSLATIONS, user);
   const navigate = useNavigator();
   const { makeChangeHandler: makeMetadataChangeHandler } = useMetadataChangeTrigger();
   const initialForm: AttributePageFormData = !attribute
@@ -135,6 +145,10 @@ const AttributePage: React.FC<AttributePageProps> = ({
     });
   };
 
+  const attributePageBackLink = useBackLinkWithState({
+    path: attributeListPath,
+  });
+
   return (
     <Form confirmLeave initial={initialForm} onSubmit={handleSubmit} disabled={disabled}>
       {({ change, set, data, isSaveDisabled, submit, errors, setError, clearErrors }) => {
@@ -144,7 +158,7 @@ const AttributePage: React.FC<AttributePageProps> = ({
           <>
             <DetailPageLayout>
               <TopNav
-                href={attributeListUrl()}
+                href={attributePageBackLink}
                 title={
                   attribute === null
                     ? intl.formatMessage({
@@ -154,7 +168,21 @@ const AttributePage: React.FC<AttributePageProps> = ({
                       })
                     : attribute?.name
                 }
-              />
+              >
+                {canTranslate && (
+                  <TranslationsButton
+                    onClick={() =>
+                      navigate(
+                        languageEntityUrl(
+                          lastUsedLocaleOrFallback,
+                          TranslatableEntities.attributes,
+                          attribute?.id ?? "",
+                        ),
+                      )
+                    }
+                  />
+                )}
+              </TopNav>
               <DetailPageLayout.Content>
                 <AttributeDetails
                   canChangeType={attribute === null}
@@ -204,13 +232,16 @@ const AttributePage: React.FC<AttributePageProps> = ({
                   onChange={change}
                 />
               </DetailPageLayout.RightSidebar>
-              <Savebar
-                disabled={!!isSaveDisabled}
-                state={saveButtonBarState}
-                onCancel={() => navigate(attributeListUrl())}
-                onSubmit={submit}
-                onDelete={attribute === null ? undefined : onDelete}
-              />
+              <Savebar>
+                {attribute !== null && <Savebar.DeleteButton onClick={onDelete} />}
+                <Savebar.Spacer />
+                <Savebar.CancelButton onClick={() => navigate(attributePageBackLink)} />
+                <Savebar.ConfirmButton
+                  transitionState={saveButtonBarState}
+                  onClick={submit}
+                  disabled={!!isSaveDisabled}
+                />
+              </Savebar>
             </DetailPageLayout>
             {children(data)}
           </>

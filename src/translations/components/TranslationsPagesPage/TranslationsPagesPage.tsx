@@ -1,9 +1,10 @@
 // @ts-strict-ignore
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import CardSpacer from "@dashboard/components/CardSpacer";
-import LanguageSwitch from "@dashboard/components/LanguageSwitch";
+import { LanguageSwitchWithCaching } from "@dashboard/components/LanguageSwitch/LanguageSwitch";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { LanguageCodeEnum, PageTranslationFragment } from "@dashboard/graphql";
+import useNavigator from "@dashboard/hooks/useNavigator";
 import { commonMessages } from "@dashboard/intl";
 import { getStringOrPlaceholder } from "@dashboard/misc";
 import {
@@ -40,6 +41,7 @@ const TranslationsPagesPage: React.FC<TranslationsPagesPageProps> = ({
   onAttributeValueSubmit,
 }) => {
   const intl = useIntl();
+  const navigate = useNavigator();
 
   return (
     <DetailPageLayout gridTemplateColumns={1}>
@@ -59,11 +61,11 @@ const TranslationsPagesPage: React.FC<TranslationsPagesPageProps> = ({
           },
         )}
       >
-        <LanguageSwitch
+        <LanguageSwitchWithCaching
           currentLanguage={LanguageCodeEnum[languageCode]}
           languages={languages}
-          getLanguageUrl={lang =>
-            languageEntityUrl(lang, TranslatableEntities.pages, translationId)
+          onLanguageChange={lang =>
+            navigate(languageEntityUrl(lang, TranslatableEntities.pages, translationId))
           }
         />
       </TopNav>
@@ -76,8 +78,8 @@ const TranslationsPagesPage: React.FC<TranslationsPagesPageProps> = ({
           fields={[
             {
               displayName: intl.formatMessage({
-                id: "gvOzOl",
-                defaultMessage: "Page Title",
+                id: "DaPGcn",
+                defaultMessage: "Model title",
               }),
               name: PageTranslationInputFieldName.title,
               translation: data?.translation?.title || null,
@@ -86,9 +88,9 @@ const TranslationsPagesPage: React.FC<TranslationsPagesPageProps> = ({
             },
             {
               displayName: intl.formatMessage({
-                id: "gMwpNC",
-                defaultMessage: "Content",
-                description: "page content",
+                id: "ymvZrH",
+                defaultMessage: "Models",
+                description: "page models",
               }),
               name: PageTranslationInputFieldName.content,
               translation: data?.translation?.content || null,

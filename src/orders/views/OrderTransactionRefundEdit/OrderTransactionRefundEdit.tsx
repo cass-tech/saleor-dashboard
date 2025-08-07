@@ -17,7 +17,12 @@ import { orderUrl } from "@dashboard/orders/urls";
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
 
-import { prepareRefundAddLines } from "../OrderTransactionRefundCreate/handlers";
+import {
+  checkAmountExceedsChargedAmount,
+  handleAmountExceedsChargedAmount,
+  prepareRefundAddLines,
+} from "../OrderTransactionRefundCreate/handlers";
+import { handleRefundEditComplete } from "./handlers";
 import { transactionRefundEditMessages } from "./messages";
 
 interface OrderTransactionRefundProps {
@@ -41,14 +46,15 @@ const OrderTransactionRefund: React.FC<OrderTransactionRefundProps> = ({ orderId
 
   const [updateRefund, updateRefundOpts] = useOrderGrantRefundEditMutation({
     onCompleted: submitData => {
-      if (submitData.orderGrantRefundUpdate?.errors.length === 0) {
-        notify({
-          status: "success",
-          text: "Saved draft",
-        });
-        setLinesErrors([]);
-      }
+      handleRefundEditComplete({
+        submitData,
+        notify,
+        setLinesErrors,
+        intl,
+        orderId,
+      });
     },
+    disableErrorHandling: true,
     update(cache, { data }) {
       if (data?.orderGrantRefundUpdate?.errors?.length === 0) {
         cache.writeQuery({
@@ -81,11 +87,23 @@ const OrderTransactionRefund: React.FC<OrderTransactionRefundProps> = ({ orderId
 
     const { amount, reason, linesToRefund, includeShipping, transactionId } = submitData;
 
+    if (
+      checkAmountExceedsChargedAmount({
+        amount,
+        order: data.order,
+        transactionId,
+      })
+    ) {
+      handleAmountExceedsChargedAmount({ setLinesErrors, intl });
+
+      return;
+    }
+
     const draftRefundLines = draftRefund.lines ?? [];
     const toRemove = draftRefundLines.map(line => line.id);
     const toAdd = prepareRefundAddLines({ linesToRefund, data });
 
-    const result = await updateRefund({
+    updateRefund({
       variables: {
         refundId,
         amount,
@@ -96,19 +114,6 @@ const OrderTransactionRefund: React.FC<OrderTransactionRefundProps> = ({ orderId
         transactionId,
       },
     });
-
-    const errors = result.data?.orderGrantRefundUpdate?.errors;
-
-    if (errors?.length) {
-      setLinesErrors(
-        errors.map(err => ({
-          code: err.code,
-          field: err.field,
-          message: err.message,
-          lines: err.addLines,
-        })) as OrderTransactionRefundError[],
-      );
-    }
   };
 
   const draftRefund: OrderDetailsGrantRefundFragment["grantedRefunds"][0] | undefined =

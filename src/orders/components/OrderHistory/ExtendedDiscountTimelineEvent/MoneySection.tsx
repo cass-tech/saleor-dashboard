@@ -1,8 +1,7 @@
-// @ts-strict-ignore
 import HorizontalSpacer from "@dashboard/components/HorizontalSpacer";
 import { DiscountValueTypeEnum, MoneyFragment } from "@dashboard/graphql";
-import { Typography } from "@material-ui/core";
 import { makeStyles } from "@saleor/macaw-ui";
+import { Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, useIntl } from "react-intl";
 
@@ -34,7 +33,6 @@ export const messages = defineMessages({
     defaultMessage: "Fixed amount",
     description: "Fixed amount subtitle",
   },
-
   newDiscountSectionTitle: {
     id: "MTl5o6",
     defaultMessage: "New discount value",
@@ -78,7 +76,7 @@ const MoneySection: React.FC<MoneySectionProps> = ({
     return null;
   }
 
-  const getDiscountSubitle = () => {
+  const getDiscountSubtitle = () => {
     const isDiscountedByPercent = calculationMode === DiscountValueTypeEnum.PERCENTAGE;
 
     if (isDiscountedByPercent) {
@@ -87,15 +85,18 @@ const MoneySection: React.FC<MoneySectionProps> = ({
 
     return intl.formatMessage(messages.fixedAmount);
   };
-  const sectionTitleMessageKey = `${sectionType}DiscountSectionTitle`;
+
+  const sectionTitleMessageKey = `${sectionType}DiscountSectionTitle` as const;
+
+  const renderMoney = (money: MoneyFragment) => <Text>{`${money.amount} ${money.currency}`}</Text>;
 
   return (
     <div className={classes.container}>
       <Label text={intl.formatMessage(messages[sectionTitleMessageKey])} />
       <div className={classes.horizontalContainer}>
-        <Typography>{`${moneyData.amount} ${moneyData.currency}`}</Typography>
+        <Text>{moneyData ? renderMoney(moneyData) : <Text>n/a</Text>}</Text>
         <HorizontalSpacer />
-        <Label text={getDiscountSubitle()} />
+        <Label text={getDiscountSubtitle()} />
       </div>
     </div>
   );

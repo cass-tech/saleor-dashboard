@@ -2,12 +2,13 @@ import ActionDialog from "@dashboard/components/ActionDialog";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { buttonMessages } from "@dashboard/intl";
 import { getStringOrPlaceholder } from "@dashboard/misc";
-import { DialogContentText } from "@material-ui/core";
+import { Box } from "@saleor/macaw-ui-next";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import msgs from "./messages";
 
+/** @deprecated use component from extensions/ */
 export interface AppActivateDialogProps {
   confirmButtonState: ConfirmButtonTransitionState;
   open: boolean;
@@ -16,6 +17,7 @@ export interface AppActivateDialogProps {
   onConfirm: () => void;
 }
 
+/** @deprecated use component from extensions/ */
 const AppActivateDialog: React.FC<AppActivateDialogProps> = ({
   confirmButtonState,
   open,
@@ -45,7 +47,7 @@ const AppActivateDialog: React.FC<AppActivateDialogProps> = ({
       title={intl.formatMessage(msgs.activateAppTitle)}
       variant="default"
     >
-      <DialogContentText data-test-id="dialog-content">{getMainText()}</DialogContentText>
+      <Box data-test-id="dialog-content">{getMainText()}</Box>
     </ActionDialog>
   );
 };

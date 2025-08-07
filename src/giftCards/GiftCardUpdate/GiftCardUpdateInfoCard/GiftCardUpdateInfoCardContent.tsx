@@ -3,6 +3,8 @@ import { AppUrls } from "@dashboard/apps/urls";
 import CardSpacer from "@dashboard/components/CardSpacer";
 import Link from "@dashboard/components/Link";
 import { customerUrl } from "@dashboard/customers/urls";
+import { ExtensionsUrls } from "@dashboard/extensions/urls";
+import { useFlag } from "@dashboard/featureFlags";
 import { GiftCardEventsEnum } from "@dashboard/graphql";
 import useDateLocalize from "@dashboard/hooks/useDateLocalize";
 import { getFullName, getStringOrPlaceholder } from "@dashboard/misc";
@@ -11,7 +13,7 @@ import { getOrderNumberLinkObject } from "@dashboard/orders/components/OrderHist
 import { getByType } from "@dashboard/orders/components/OrderReturnPage/utils";
 import { productUrl } from "@dashboard/products/urls";
 import { staffMemberDetailsUrl } from "@dashboard/staff/urls";
-import { Typography } from "@material-ui/core";
+import { Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { MessageDescriptor, useIntl } from "react-intl";
 
@@ -23,9 +25,11 @@ const GiftCardUpdateInfoCardContent: React.FC = () => {
   const intl = useIntl();
   const localizeDate = useDateLocalize();
   const { giftCard } = useGiftCardDetails();
-  const { created, createdByEmail, createdBy, usedByEmail, usedBy, product, events } = giftCard;
-  const cardIssuedEvent = events.find(getByType(GiftCardEventsEnum.ISSUED));
-  const cardBoughtEvent = events.find(getByType(GiftCardEventsEnum.BOUGHT));
+  const { created, createdByEmail, createdBy, usedByEmail, usedBy, product } = giftCard;
+  const cardIssuedEvent = giftCard?.events?.find(getByType(GiftCardEventsEnum.ISSUED));
+  const cardBoughtEvent = giftCard?.events?.find(getByType(GiftCardEventsEnum.BOUGHT));
+  const { enabled: areExtensionsEnabled } = useFlag("extensions");
+
   const getBuyerFieldData = (): {
     label: MessageDescriptor;
     name: string;
@@ -40,7 +44,9 @@ const GiftCardUpdateInfoCardContent: React.FC = () => {
         return {
           label: messages.issuedByAppLabel,
           name: app?.name,
-          url: AppUrls.resolveAppUrl(app?.id),
+          url: areExtensionsEnabled
+            ? ExtensionsUrls.resolveViewManifestExtensionUrl(app?.id)
+            : AppUrls.resolveAppUrl(app?.id),
         };
       }
 
@@ -97,34 +103,30 @@ const GiftCardUpdateInfoCardContent: React.FC = () => {
   return (
     <>
       <Label text={intl.formatMessage(messages.creationLabel)} />
-      <Typography>{localizeDate(created)}</Typography>
+      <Text>{localizeDate(created)}</Text>
       <CardSpacer />
 
       <Label text={intl.formatMessage(messages.orderNumberLabel)} />
-      {orderData ? (
-        <Link href={orderData.link}>{orderData.text}</Link>
-      ) : (
-        <Typography>{PLACEHOLDER}</Typography>
-      )}
+      {orderData ? <Link href={orderData.link}>{orderData.text}</Link> : <Text>{PLACEHOLDER}</Text>}
       <CardSpacer />
 
       <Label text={intl.formatMessage(messages.productLabel)} />
       {product ? (
         <Link href={productUrl(product?.id)}>{product?.name}</Link>
       ) : (
-        <Typography>{PLACEHOLDER}</Typography>
+        <Text>{PLACEHOLDER}</Text>
       )}
       <CardSpacer />
 
       <Label text={intl.formatMessage(buyerLabelMessage)} />
-      {buyerUrl ? <Link href={buyerUrl}>{buyerName}</Link> : <Typography>{buyerName}</Typography>}
+      {buyerUrl ? <Link href={buyerUrl}>{buyerName}</Link> : <Text>{buyerName}</Text>}
       <CardSpacer />
 
       <Label text={intl.formatMessage(messages.usedByLabel)} />
       {usedBy ? (
         <Link href={customerUrl(usedBy.id)}>{getFullName(usedBy)}</Link>
       ) : (
-        <Typography>{getStringOrPlaceholder(usedByEmail, PLACEHOLDER)}</Typography>
+        <Text>{getStringOrPlaceholder(usedByEmail, PLACEHOLDER)}</Text>
       )}
     </>
   );

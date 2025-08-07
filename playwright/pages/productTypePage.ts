@@ -4,10 +4,6 @@ import { DeleteDialog } from "@pages/dialogs/deleteDialog";
 import type { Page } from "@playwright/test";
 
 export class ProductTypePage extends BasePage {
-  readonly page: Page;
-
-  readonly basePage: BasePage;
-
   readonly deleteProductTypeDialog: DeleteDialog;
 
   constructor(
@@ -15,11 +11,11 @@ export class ProductTypePage extends BasePage {
     readonly addProductTypeButton = page.getByTestId("add-product-type"),
     readonly notificationSuccess = page.getByTestId("notification-message"),
     readonly nameInput = page.locator("[name='name']"),
-    readonly isShippingRequired = page.locator("[name='isShippingRequired']"),
+    readonly isShippingRequired = page.getByTestId("isShippingRequired"),
     readonly assignProductAttributeButton = page.getByTestId("assign-products-attributes"),
     readonly hasVariantsButton = page.locator("[name='hasVariants']"),
     readonly shippingWeightInput = page.locator("[name='weight']"),
-    readonly giftCardKindCheckbox = page.getByTestId("product-type-kind-option-GIFT_CARD"),
+    readonly giftCardKindCheckbox = page.getByTestId("GIFT_CARD"),
     readonly variantSelectionCheckbox = page.getByTestId("variant-selection-checkbox"),
     readonly saveButton = page.getByTestId("button-bar-confirm"),
     readonly bulkDeleteButton = page.getByTestId("bulk-delete-product-types"),
@@ -27,8 +23,6 @@ export class ProductTypePage extends BasePage {
     readonly rowCheckbox = page.getByTestId("checkbox"),
   ) {
     super(page);
-    this.page = page;
-    this.basePage = new BasePage(page);
     this.deleteProductTypeDialog = new DeleteDialog(page);
   }
 
@@ -57,10 +51,6 @@ export class ProductTypePage extends BasePage {
   async gotoAddProductTypePage() {
     console.log(`Navigating to add product type page: ${URL_LIST.productTypesAdd}`);
     await this.page.goto(URL_LIST.productTypesAdd);
-  }
-
-  async expectSuccessBanner() {
-    await this.basePage.expectSuccessBanner();
   }
 
   async gotoProductTypeListPage() {

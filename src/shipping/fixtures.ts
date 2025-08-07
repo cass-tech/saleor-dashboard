@@ -1899,6 +1899,11 @@ export const products: RelayToFlat<NonNullable<SearchProductsQuery["search"]>> =
       __typename: "Image",
       url: "",
     },
+    productType: {
+      __typename: "ProductType",
+      id: "1",
+      name: "Juice",
+    },
     channelListings: [],
     collections: [{ __typename: "Collection", id: "Q29sbGVjdGlvbjo0" }],
     variants: [
@@ -1907,6 +1912,20 @@ export const products: RelayToFlat<NonNullable<SearchProductsQuery["search"]>> =
         id: "UHJvZHVjdFZhcmlhbnQ6MjAz",
         name: "1l",
         sku: "43226647",
+        product: {
+          __typename: "Product",
+          id: "UHJvZHVjdDo1",
+          name: "Apple Juice",
+          thumbnail: {
+            __typename: "Image",
+            url: "",
+          },
+          productType: {
+            __typename: "ProductType",
+            id: "1",
+            name: "Juice",
+          },
+        },
         channelListings: [
           {
             __typename: "ProductVariantChannelListing",

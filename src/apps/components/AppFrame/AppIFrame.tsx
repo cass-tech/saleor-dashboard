@@ -15,6 +15,7 @@ interface AppIFrameProps {
   className: string;
 }
 
+/** @deprecated Use component from extensions/ */
 const _AppIFrame = forwardRef<HTMLIFrameElement, AppIFrameProps>(
   ({ appId, src, featureFlags, params, onLoad, onError, className }, ref) => {
     const themeRef = useRef<ThemeType>();
@@ -41,7 +42,7 @@ const _AppIFrame = forwardRef<HTMLIFrameElement, AppIFrameProps>(
         onLoad={onLoad}
         onError={onError}
         className={className}
-        sandbox="allow-same-origin allow-forms allow-scripts"
+        sandbox="allow-same-origin allow-forms allow-scripts allow-downloads"
       />
     );
   },

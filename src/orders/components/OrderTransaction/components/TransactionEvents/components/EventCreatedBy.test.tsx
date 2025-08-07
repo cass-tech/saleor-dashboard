@@ -1,6 +1,5 @@
-// @ts-strict-ignore
 import { appAvatar } from "@dashboard/apps/fixtures";
-import { AppPaths } from "@dashboard/apps/urls";
+import { ExtensionsUrls } from "@dashboard/extensions/urls";
 import { staffMemberAvatar } from "@dashboard/staff/fixtures";
 import { staffMemberDetailsPath } from "@dashboard/staff/urls";
 import { render, screen } from "@testing-library/react";
@@ -8,6 +7,10 @@ import React from "react";
 import { MemoryRouter } from "react-router";
 
 import { EventCreatedBy } from "./EventCreatedBy";
+
+jest.mock("@dashboard/featureFlags", () => ({
+  useFlag: jest.fn(() => ({ enabled: true })),
+}));
 
 describe("EventCreatedBy", () => {
   it("doesn't display anything if there's no app / user", () => {
@@ -23,10 +26,11 @@ describe("EventCreatedBy", () => {
 
     const link = screen.getByRole("link");
 
-    expect(link).toHaveTextContent(appAvatar.name);
+    expect(link).toHaveTextContent(appAvatar.name as string);
     expect(link).toHaveProperty(
       "href",
-      "http://localhost" + AppPaths.resolveAppPath(encodeURIComponent(appAvatar.id)),
+      "http://localhost" +
+        ExtensionsUrls.resolveViewManifestExtensionUrl(appAvatar.id).replace("?", ""),
     );
   });
   it("displays a link to the user settings if user is passed", () => {

@@ -119,6 +119,7 @@ export const voucherDetails = gql`
     $includeProducts: Boolean!
     $includeCollections: Boolean!
     $includeCategories: Boolean!
+    $includeVariants: Boolean!
   ) {
     voucher(id: $id) {
       ...VoucherDetails
@@ -229,27 +230,7 @@ export const PromotionDetailsQuery = /* GraphQL */ `
         name
         description
         channels {
-          id
-          isActive
-          name
-          slug
-          currencyCode
-          defaultCountry {
-            code
-            country
-          }
-          stockSettings {
-            allocationStrategy
-          }
-          hasOrders
-          orderSettings {
-            markAsPaidStrategy
-            deleteExpiredOrdersAfter
-            allowUnpaidOrders
-          }
-          paymentSettings {
-            defaultTransactionFlowStrategy
-          }
+          ...PromotionRuleChannel
         }
         giftIds
         rewardType

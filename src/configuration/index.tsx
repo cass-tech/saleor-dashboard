@@ -5,13 +5,12 @@ import { channelsListUrl } from "@dashboard/channels/urls";
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import { APP_VERSION as dashboardVersion } from "@dashboard/config";
 import { CustomAppUrls } from "@dashboard/custom-apps/urls";
+import { useFlag } from "@dashboard/featureFlags";
 import { PermissionEnum } from "@dashboard/graphql";
 import useShop from "@dashboard/hooks/useShop";
 import Attributes from "@dashboard/icons/Attributes";
 import Channels from "@dashboard/icons/Channels";
 import Miscellaneous from "@dashboard/icons/Miscellaneous";
-import Navigation from "@dashboard/icons/Navigation";
-import PageTypes from "@dashboard/icons/PageTypes";
 import PermissionGroups from "@dashboard/icons/PermissionGroups";
 import Plugins from "@dashboard/icons/Plugins";
 import ProductTypes from "@dashboard/icons/ProductTypes";
@@ -22,8 +21,6 @@ import Taxes from "@dashboard/icons/Taxes";
 import Warehouses from "@dashboard/icons/Warehouses";
 import { sectionNames } from "@dashboard/intl";
 import { maybe } from "@dashboard/misc";
-import { menuListUrl } from "@dashboard/navigation/urls";
-import { pageTypeListUrl } from "@dashboard/pageTypes/urls";
 import { permissionGroupListUrl } from "@dashboard/permissionGroups/urls";
 import { pluginListUrl } from "@dashboard/plugins/urls";
 import { productTypeListUrl } from "@dashboard/productTypes/urls";
@@ -38,7 +35,11 @@ import { IntlShape, useIntl } from "react-intl";
 import { ConfigurationPage } from "./ConfigurationPage";
 import { MenuSection } from "./types";
 
-export function createConfigurationMenu(intl: IntlShape): MenuSection[] {
+// TODO: Remove hideOldExtensions once "extensions" feature flag is removed
+export function createConfigurationMenu(
+  intl: IntlShape,
+  hideOldExtensions?: boolean,
+): MenuSection[] {
   return [
     {
       label: intl.formatMessage({
@@ -173,43 +174,10 @@ export function createConfigurationMenu(intl: IntlShape): MenuSection[] {
     },
     {
       label: intl.formatMessage({
-        id: "HjXnIf",
-        defaultMessage: "Content Management",
-      }),
-      menuItems: [
-        {
-          description: intl.formatMessage({
-            id: "JPH/uP",
-            defaultMessage: "Define types of content pages used in your store",
-          }),
-          icon: <PageTypes />,
-          permissions: [
-            PermissionEnum.MANAGE_PAGES,
-            PermissionEnum.MANAGE_PAGE_TYPES_AND_ATTRIBUTES,
-          ],
-          title: intl.formatMessage(sectionNames.pageTypes),
-          url: pageTypeListUrl(),
-          testId: "configuration-menu-page-types",
-        },
-      ],
-    },
-    {
-      label: intl.formatMessage({
         id: "YZl6cv",
         defaultMessage: "Miscellaneous",
       }),
       menuItems: [
-        {
-          description: intl.formatMessage({
-            id: "hpMcW8",
-            defaultMessage: "Define how users can navigate through your store",
-          }),
-          icon: <Navigation />,
-          permissions: [PermissionEnum.MANAGE_MENUS],
-          title: intl.formatMessage(sectionNames.navigation),
-          url: menuListUrl(),
-          testId: "configuration-menu-navigation",
-        },
         {
           description: intl.formatMessage({
             id: "5BajZK",
@@ -233,6 +201,7 @@ export function createConfigurationMenu(intl: IntlShape): MenuSection[] {
           title: intl.formatMessage(sectionNames.plugins),
           url: pluginListUrl(),
           testId: "configuration-plugins-pages",
+          hidden: hideOldExtensions,
         },
         {
           description: intl.formatMessage({
@@ -243,6 +212,7 @@ export function createConfigurationMenu(intl: IntlShape): MenuSection[] {
           title: intl.formatMessage(sectionNames.webhooksAndEvents),
           url: CustomAppUrls.resolveAppListUrl(),
           testId: "configuration-menu-webhooks-and-events",
+          hidden: hideOldExtensions,
         },
       ],
     },
@@ -259,12 +229,13 @@ export const ConfigurationSection: React.FC = () => {
   };
   const user = useUser();
   const intl = useIntl();
+  const { enabled: isExtensionsEnabled } = useFlag("extensions");
 
   return (
     <>
       <WindowTitle title={intl.formatMessage(sectionNames.configuration)} />
       <ConfigurationPage
-        menu={createConfigurationMenu(intl)}
+        menu={createConfigurationMenu(intl, isExtensionsEnabled)}
         user={maybe(() => user.user)}
         versionInfo={versions}
       />

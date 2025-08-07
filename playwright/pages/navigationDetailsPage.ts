@@ -56,10 +56,12 @@ export class NavigationDetailsPage extends BasePage {
 
   async clickCreateNewMenuItem() {
     await this.createMenuItemButton.click();
+    await this.waitForDOMToFullyLoad();
   }
 
   async clickSaveButton() {
     await this.saveButton.click();
+    await this.waitForDOMToFullyLoad();
   }
 
   async clickDeleteButton() {

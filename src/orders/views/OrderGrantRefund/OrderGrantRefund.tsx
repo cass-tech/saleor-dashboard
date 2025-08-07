@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { WindowTitle } from "@dashboard/components/WindowTitle";
 import {
   useOrderDetailsGrantRefundQuery,
@@ -32,7 +31,7 @@ const OrderGrantRefund: React.FC<OrderGrantRefundProps> = ({ orderId }) => {
   });
   const [grantRefund, grantRefundOptions] = useOrderGrantRefundAddMutation({
     onCompleted: submitData => {
-      if (submitData.orderGrantRefundCreate.errors.length === 0) {
+      if (submitData.orderGrantRefundCreate?.errors.length === 0) {
         navigate(orderUrl(orderId), { replace: true });
         notify({
           status: "success",
@@ -48,6 +47,7 @@ const OrderGrantRefund: React.FC<OrderGrantRefundProps> = ({ orderId }) => {
     reason,
     lines,
     grantRefundForShipping,
+    transactionId,
   }: OrderGrantRefundFormData) => {
     // API call should be stoped when use doesn't select any line,
     // doesn't provide own amount and doesn't want to refund shipping
@@ -63,6 +63,7 @@ const OrderGrantRefund: React.FC<OrderGrantRefundProps> = ({ orderId }) => {
           reason,
           lines: squashLines(lines),
           grantRefundForShipping,
+          transactionId,
         },
       }),
     );
@@ -80,7 +81,7 @@ const OrderGrantRefund: React.FC<OrderGrantRefundProps> = ({ orderId }) => {
       />
 
       <OrderGrantRefundPage
-        order={data?.order}
+        order={data?.order ?? undefined}
         loading={loading}
         submitState={grantRefundOptions.status}
         onSubmit={handleSubmit}

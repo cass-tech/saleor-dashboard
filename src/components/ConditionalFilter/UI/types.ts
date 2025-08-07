@@ -25,6 +25,7 @@ type ConditionOptionTypes = ConditionOption<
   | "text"
   | "number"
   | "multiselect"
+  | "bulkselect"
   | "combobox"
   | "select"
   | "number.range"
@@ -32,11 +33,16 @@ type ConditionOptionTypes = ConditionOption<
   | "datetime"
   | "date.range"
   | "datetime.range"
+  | "text.double"
 >;
 
 export interface Row {
   value: { label: string; value: string; type: string } | null;
   loading?: boolean;
+  isAttribute: boolean;
+  selectedAttribute?: { label: string; value: string; type: string } | null;
+  availableAttributesList?: LeftOperatorOption[];
+  attributeLoading?: boolean;
   constraint?: {
     dependsOn: string[];
     disabled?: DisabledScope[];
@@ -52,22 +58,31 @@ export interface Row {
 export type SelectedOperator =
   | InputOperator
   | MultiselectOperator
+  | BulkselectOperator
   | ComboboxOperator
   | SelectOperator
   | NumberRangeOperator
   | DateOperator
   | DateTimeOperator
   | DateRangeOperator
-  | DateTimeRangeOperator;
+  | DateTimeRangeOperator
+  | DoubleTextOperator;
 
 export interface InputOperator {
-  value: string;
+  value: string | RightOperatorOption;
   conditionValue: ConditionOption<"text" | "number"> | null;
 }
 
 export interface MultiselectOperator {
   value: RightOperatorOption[];
   conditionValue: ConditionOption<"multiselect"> | null;
+  options: RightOperatorOption[];
+  loading?: boolean;
+}
+
+export interface BulkselectOperator {
+  value: RightOperatorOption[];
+  conditionValue: ConditionOption<"bulkselect"> | null;
   options: RightOperatorOption[];
   loading?: boolean;
 }
@@ -110,6 +125,11 @@ export interface DateTimeRangeOperator {
   conditionValue: ConditionOption<"datetime.range"> | null;
 }
 
+export interface DoubleTextOperator {
+  value: [string, string];
+  conditionValue: ConditionOption<"text.double"> | null;
+}
+
 export interface FilterEvent extends Event {
   detail?:
     | RowAddData
@@ -124,7 +144,11 @@ export interface FilterEvent extends Event {
     | RightOperatorChangeData
     | RightOperatorFocusData
     | RightOperatorBlurData
-    | RightOperatorInputValueChangeData;
+    | RightOperatorInputValueChangeData
+    | AttributeChangeData
+    | AttributeFocusData
+    | AttributeBlurData
+    | AttributeInputValueChangeData;
 }
 
 export interface RowAddData {
@@ -206,6 +230,32 @@ export interface RightOperatorBlurData {
 export interface RightOperatorInputValueChangeData {
   type: "rightOperator.onInputValueChange";
   path: `${number}.condition.selected.value`;
+  index: number;
+  value: string;
+}
+
+export interface AttributeChangeData {
+  type: "attribute.onChange";
+  path: `${number}`;
+  index: number;
+  value: LeftOperatorOption;
+}
+
+export interface AttributeFocusData {
+  type: "attribute.onFocus";
+  path: `${number}`;
+  index: number;
+}
+
+export interface AttributeBlurData {
+  type: "attribute.onBlur";
+  path: `${number}`;
+  index: number;
+}
+
+export interface AttributeInputValueChangeData {
+  type: "attribute.onInputValueChange";
+  path: `${number}`;
   index: number;
   value: string;
 }

@@ -66,7 +66,14 @@ export function useProductUpdateForm(
     confirmLeave: true,
     formId: PRODUCT_UPDATE_FORM_ID,
   });
-  const { handleChange, triggerChange, toggleValues, data: formData, setIsSubmitDisabled } = form;
+  const {
+    handleChange,
+    triggerChange,
+    toggleValues,
+    data: formData,
+    setIsSubmitDisabled,
+    cleanChanged,
+  } = form;
   const { locale } = useLocale();
   const datagrid = useDatagridChangeState();
   const variants = useRef<DatagridChangeOpts>({
@@ -116,7 +123,7 @@ export function useProductUpdateForm(
     opts.setSelectedCategory,
     opts.categories,
   );
-  const handleAttributeChange = createAttributeChangeHandler(attributes.change, triggerChange);
+  const handleAttributeChange = createAttributeChangeHandler(attributes, triggerChange);
   const handleAttributeMultiChange = createAttributeMultiChangeHandler(
     attributes.change,
     attributes.data,
@@ -167,12 +174,14 @@ export function useProductUpdateForm(
       attributesWithNewFileValue.data,
       opts.referencePages,
       opts.referenceProducts,
+      opts.referenceCollections,
+      opts.referenceCategories,
     ),
     channels,
     description: null,
   };
   const getSubmitData = async (): Promise<ProductUpdateSubmitData> => ({
-    ...data,
+    ...form.changedData,
     ...getMetadata(data, isMetadataModified, isPrivateMetadataModified),
     attributes: mergeAttributes(
       attributes.data,
@@ -185,7 +194,7 @@ export function useProductUpdateForm(
         touchedChannels.current.includes(listing.channelId),
       ),
     },
-    description: await richText.getValue(),
+    description: richText.isDirty ? await richText.getValue() : undefined,
     variants: variants.current,
   });
   const handleSubmit = async (data: ProductUpdateSubmitData) => {
@@ -204,6 +213,7 @@ export function useProductUpdateForm(
   const submit = useCallback(async () => {
     const result = await handleFormSubmit(await getSubmitData());
 
+    cleanChanged();
     await refetch();
     datagrid.setAdded(prevAdded =>
       prevAdded.filter((_, index) =>

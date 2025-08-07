@@ -1,13 +1,12 @@
 import { ATTRIBUTE_TYPES_WITH_CONFIGURABLE_FACED_NAVIGATION } from "@dashboard/attributes/utils/data";
-import CardTitle from "@dashboard/components/CardTitle";
-import ControlledCheckbox from "@dashboard/components/ControlledCheckbox";
-import ControlledSwitch from "@dashboard/components/ControlledSwitch";
+import { DashboardCard } from "@dashboard/components/Card";
 import FormSpacer from "@dashboard/components/FormSpacer";
 import { AttributeErrorFragment, AttributeTypeEnum } from "@dashboard/graphql";
+import { FormChange } from "@dashboard/hooks/useForm";
 import { commonMessages } from "@dashboard/intl";
 import { getFormErrors } from "@dashboard/utils/errors";
 import getAttributeErrorMessage from "@dashboard/utils/errors/attribute";
-import { Card, CardContent, TextField, Typography } from "@material-ui/core";
+import { Box, Checkbox, Input, Paragraph, Text, Toggle } from "@saleor/macaw-ui-next";
 import React from "react";
 import { defineMessages, FormattedMessage, useIntl } from "react-intl";
 
@@ -30,9 +29,9 @@ const messages = defineMessages({
     description: "attribute properties regarding dashboard",
   },
   filterableInDashboard: {
-    id: "RH+aOF",
-    defaultMessage: "Use in Filtering",
-    description: "use attribute in filtering",
+    id: "j5hGyJ",
+    defaultMessage: "Filterable in dashboard",
+    description: "attribute is filterable in dashboard",
   },
   filterableInDashboardCaption: {
     id: "Q9wTrz",
@@ -41,8 +40,8 @@ const messages = defineMessages({
     description: "caption",
   },
   filterableInStorefront: {
-    defaultMessage: "Use as filter",
-    id: "e1vU/4",
+    defaultMessage: "Filterable in storefront",
+    id: "SV0FRm",
     description: "attribute is filterable in storefront",
   },
   storefrontPropertiesTitle: {
@@ -56,8 +55,8 @@ const messages = defineMessages({
     description: "attribute position in storefront filters",
   },
   visibleInStorefront: {
-    id: "x8V/xS",
-    defaultMessage: "Public",
+    id: "inWs4U",
+    defaultMessage: "Visible in storefront",
     description: "attribute visibility in storefront",
   },
   visibleInStorefrontCaption: {
@@ -71,7 +70,7 @@ export interface AttributePropertiesProps {
   data: AttributePageFormData;
   disabled: boolean;
   errors: AttributeErrorFragment[];
-  onChange: (event: React.ChangeEvent<any>) => void;
+  onChange: FormChange;
 }
 
 const AttributeProperties: React.FC<AttributePropertiesProps> = ({
@@ -87,25 +86,39 @@ const AttributeProperties: React.FC<AttributePropertiesProps> = ({
     data.type === AttributeTypeEnum.PRODUCT_TYPE;
 
   return (
-    <Card>
-      <CardTitle title={intl.formatMessage(commonMessages.properties)} />
-      <CardContent>
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>{intl.formatMessage(commonMessages.properties)}</DashboardCard.Title>
+      </DashboardCard.Header>
+
+      <DashboardCard.Content>
         {storefrontFacetedNavigationProperties && (
           <>
-            <ControlledCheckbox
+            <Checkbox
               name={"filterableInStorefront" as keyof FormData}
-              label={intl.formatMessage(messages.filterableInStorefront)}
               checked={data.filterableInStorefront}
-              onChange={onChange}
+              onCheckedChange={checked =>
+                onChange({
+                  target: {
+                    name: "filterableInStorefront",
+                    value: checked as boolean,
+                  },
+                })
+              }
               disabled={disabled}
-            />
+            >
+              <Text fontWeight="medium" fontSize={3} display="block">
+                {intl.formatMessage(messages.filterableInStorefront)}
+              </Text>
+            </Checkbox>
+
             {data.filterableInStorefront && (
               <>
                 <FormSpacer />
-                <TextField
+                <Input
                   disabled={disabled}
                   error={!!formErrors.storefrontSearchPosition}
-                  fullWidth
+                  width="100%"
                   helperText={getAttributeErrorMessage(formErrors.storefrontSearchPosition, intl)}
                   name={"storefrontSearchPosition" as keyof AttributePageFormData}
                   label={intl.formatMessage(messages.storefrontSearchPosition)}
@@ -117,22 +130,31 @@ const AttributeProperties: React.FC<AttributePropertiesProps> = ({
             <FormSpacer />
           </>
         )}
-        <ControlledSwitch
-          name={"visibleInStorefront" as keyof FormData}
-          label={
-            <>
+
+        <Box className="multiline-toggle-wrapper">
+          <Toggle
+            name={"visibleInStorefront" as keyof FormData}
+            pressed={data.visibleInStorefront}
+            onPressedChange={pressed =>
+              onChange({
+                target: {
+                  name: "visibleInStorefront" as keyof FormData,
+                  value: pressed as boolean,
+                },
+              })
+            }
+            disabled={disabled}
+          >
+            <Paragraph fontWeight="medium" fontSize={3}>
               <FormattedMessage {...messages.visibleInStorefront} />
-              <Typography variant="caption">
+              <Text size={2} fontWeight="light" color="default2" display="block">
                 <FormattedMessage {...messages.visibleInStorefrontCaption} />
-              </Typography>
-            </>
-          }
-          checked={data.visibleInStorefront}
-          onChange={onChange}
-          disabled={disabled}
-        />
-      </CardContent>
-    </Card>
+              </Text>
+            </Paragraph>
+          </Toggle>
+        </Box>
+      </DashboardCard.Content>
+    </DashboardCard>
   );
 };
 

@@ -8,12 +8,14 @@ export interface OrderGrantRefundFormData {
   amount: number | undefined;
   reason: string;
   lines: OrderGrantRefundCreateLineInput[];
-  grantRefundForShipping: boolean;
+  grantRefundForShipping?: boolean;
+  transactionId: string;
 }
 
 const defaultInitialData: OrderGrantRefundFormData = {
   amount: 0,
   reason: "",
+  transactionId: "",
   lines: [],
   grantRefundForShipping: false,
 };
@@ -27,7 +29,7 @@ interface GrantRefundFormHookProps {
   onSubmit: (data: OrderGrantRefundFormData) => void;
   grantedRefund?: OrderGrantRefundFormData;
   lines: Line[];
-  grantRefundForShipping: boolean;
+  grantRefundForShipping?: boolean;
 }
 
 export const useGrantRefundForm = ({

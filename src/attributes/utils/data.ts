@@ -12,14 +12,14 @@ import {
   Node,
   PageSelectedAttributeFragment,
   ProductFragment,
+  SearchCategoriesQuery,
+  SearchCollectionsQuery,
   SearchPagesQuery,
   SearchProductsQuery,
   SelectedVariantAttributeFragment,
   UploadErrorFragment,
-  VariantAttributeFragment,
 } from "@dashboard/graphql";
 import { FormsetData } from "@dashboard/hooks/useFormset";
-import { AttributeValuesMetadata } from "@dashboard/products/utils/data";
 import { RelayToFlat } from "@dashboard/types";
 import { mapEdgesToItems, mapNodeToChoice, mapPagesToChoices } from "@dashboard/utils/maps";
 import { RichTextContextValues } from "@dashboard/utils/richText/context";
@@ -143,16 +143,6 @@ export function getAttributeData(
   }
 }
 
-export function getDefaultAttributeValues(attribute: VariantAttributeFragment) {
-  switch (attribute.inputType) {
-    case AttributeInputTypeEnum.BOOLEAN:
-      return ["false"];
-
-    default:
-      return [];
-  }
-}
-
 export function getSelectedAttributeValues(
   attribute:
     | PageSelectedAttributeFragment
@@ -173,7 +163,7 @@ export function getSelectedAttributeValues(
       return [attribute.values[0]?.name];
 
     case AttributeInputTypeEnum.BOOLEAN:
-      return [attribute.values[0]?.boolean ?? "false"];
+      return [attribute.values[0]?.boolean];
 
     case AttributeInputTypeEnum.DATE:
       return [attribute.values[0]?.date];
@@ -256,16 +246,6 @@ export const mergeAttributeValues = (
   const attribute = attributes.find(attribute => attribute.id === attributeId);
 
   return attribute?.value ? [...attribute.value, ...attributeValues] : attributeValues;
-};
-
-export const mergeAttributeValuesWithLabels = (
-  attributeId: string,
-  attributeMetadata: AttributeValuesMetadata[],
-  attributes: FormsetData<AttributeInputData, string[], AttributeValuesMetadata[]>,
-) => {
-  const attribute = attributes.find(attribute => attribute.id === attributeId);
-
-  return attribute?.metadata ? [...attribute.metadata, ...attributeMetadata] : attributeMetadata;
 };
 
 export const mergeAttributes = (...attributeLists: AttributeInput[][]): AttributeInput[] =>
@@ -443,10 +423,66 @@ export const getProductVariantReferenceAttributeDisplayData = (
   },
 });
 
+export const getCollectionReferenceAttributeDisplayData = (
+  attribute: AttributeInput,
+  referenceCollections: RelayToFlat<NonNullable<SearchCollectionsQuery["search"]>>,
+) => ({
+  ...attribute,
+  data: {
+    ...attribute.data,
+    references:
+      referenceCollections?.length > 0 && attribute.value?.length > 0
+        ? mapNodeToChoice(
+            attribute.value.reduce<RelayToFlat<NonNullable<SearchCollectionsQuery["search"]>>>(
+              (acc, value) => {
+                const reference = referenceCollections.find(reference => reference.id === value);
+
+                if (reference) {
+                  acc.push(reference);
+                }
+
+                return acc;
+              },
+              [],
+            ),
+          )
+        : [],
+  },
+});
+
+export const getCategoryReferenceAttributeDisplayData = (
+  attribute: AttributeInput,
+  referenceCategories: RelayToFlat<NonNullable<SearchCategoriesQuery["search"]>>,
+) => ({
+  ...attribute,
+  data: {
+    ...attribute.data,
+    references:
+      referenceCategories?.length > 0 && attribute.value?.length > 0
+        ? mapNodeToChoice(
+            attribute.value.reduce<RelayToFlat<NonNullable<SearchCategoriesQuery["search"]>>>(
+              (acc, value) => {
+                const reference = referenceCategories.find(reference => reference.id === value);
+
+                if (reference) {
+                  acc.push(reference);
+                }
+
+                return acc;
+              },
+              [],
+            ),
+          )
+        : [],
+  },
+});
+
 export const getReferenceAttributeDisplayData = (
   attribute: AttributeInput,
   referencePages: RelayToFlat<NonNullable<SearchPagesQuery["search"]>>,
   referenceProducts: RelayToFlat<NonNullable<SearchProductsQuery["search"]>>,
+  referenceCollections: RelayToFlat<NonNullable<SearchCollectionsQuery["search"]>>,
+  referenceCategories: RelayToFlat<NonNullable<SearchCategoriesQuery["search"]>>,
 ) => {
   if (attribute.data.entityType === AttributeEntityTypeEnum.PAGE) {
     return getPageReferenceAttributeDisplayData(attribute, referencePages);
@@ -454,6 +490,10 @@ export const getReferenceAttributeDisplayData = (
     return getProductReferenceAttributeDisplayData(attribute, referenceProducts);
   } else if (attribute.data.entityType === AttributeEntityTypeEnum.PRODUCT_VARIANT) {
     return getProductVariantReferenceAttributeDisplayData(attribute, referenceProducts);
+  } else if (attribute.data.entityType === AttributeEntityTypeEnum.COLLECTION) {
+    return getCollectionReferenceAttributeDisplayData(attribute, referenceCollections);
+  } else if (attribute.data.entityType === AttributeEntityTypeEnum.CATEGORY) {
+    return getCategoryReferenceAttributeDisplayData(attribute, referenceCategories);
   }
 };
 
@@ -462,10 +502,18 @@ export const getAttributesDisplayData = (
   attributesWithNewFileValue: FormsetData<null, File>,
   referencePages: RelayToFlat<NonNullable<SearchPagesQuery["search"]>>,
   referenceProducts: RelayToFlat<NonNullable<SearchProductsQuery["search"]>>,
+  referenceCollections: RelayToFlat<NonNullable<SearchCollectionsQuery["search"]>>,
+  referenceCategories: RelayToFlat<NonNullable<SearchCategoriesQuery["search"]>>,
 ) =>
   attributes.map(attribute => {
     if (attribute.data.inputType === AttributeInputTypeEnum.REFERENCE) {
-      return getReferenceAttributeDisplayData(attribute, referencePages, referenceProducts);
+      return getReferenceAttributeDisplayData(
+        attribute,
+        referencePages,
+        referenceProducts,
+        referenceCollections,
+        referenceCategories,
+      );
     }
 
     if (attribute.data.inputType === AttributeInputTypeEnum.FILE) {
@@ -475,19 +523,12 @@ export const getAttributesDisplayData = (
     return attribute;
   });
 
-export const getSelectedReferencesFromAttribute = <T extends Node>(
-  attribute?: AttributeInput,
-  references?: T[],
-) =>
-  references?.filter(
-    value => !attribute?.value?.some(selectedValue => selectedValue === value.id),
-  ) || [];
-
 export const getReferenceAttributeEntityTypeFromAttribute = (
   attributeId: string,
   attributes?: AttributeInput[],
-): AttributeEntityTypeEnum | undefined =>
-  attributes?.find(attribute => attribute.id === attributeId)?.data?.entityType;
+): AttributeEntityTypeEnum | undefined => {
+  return attributes?.find(attribute => attribute.id === attributeId)?.data?.entityType;
+};
 
 export const mapReferenceProductsToVariants = (
   referenceProducts: RelayToFlat<NonNullable<SearchProductsQuery["search"]>>,

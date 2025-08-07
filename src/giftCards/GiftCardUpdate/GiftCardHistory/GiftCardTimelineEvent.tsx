@@ -1,9 +1,11 @@
 // @ts-strict-ignore
-import { AppPaths } from "@dashboard/apps/urls";
+import { AppPaths, AppUrls } from "@dashboard/apps/urls";
 import Link from "@dashboard/components/Link";
 import { TimelineEvent } from "@dashboard/components/Timeline";
 import { customerPath } from "@dashboard/customers/urls";
-import { GiftCardEventFragment, GiftCardEventsEnum } from "@dashboard/graphql";
+import { ExtensionsUrls } from "@dashboard/extensions/urls";
+import { useFlag } from "@dashboard/featureFlags";
+import { GiftCardDetailsQuery, GiftCardEventsEnum } from "@dashboard/graphql";
 import { orderUrl } from "@dashboard/orders/urls";
 import { staffMemberDetailsUrl } from "@dashboard/staff/urls";
 import React from "react";
@@ -11,7 +13,9 @@ import { IntlShape, useIntl } from "react-intl";
 
 import { giftCardHistoryTimelineMessages as timelineMessages } from "./messages";
 
-const getUserOrApp = (event: GiftCardEventFragment): string | null => {
+type GiftCardEventType = GiftCardDetailsQuery["giftCard"]["events"][0];
+
+const getUserOrApp = (event: GiftCardEventType): string | null => {
   if (event.user) {
     const { firstName, lastName, email } = event.user;
 
@@ -28,20 +32,28 @@ const getUserOrApp = (event: GiftCardEventFragment): string | null => {
 
   return null;
 };
-const getUserOrAppUrl = (event: GiftCardEventFragment): string => {
+const getUserOrAppUrl = (event: GiftCardEventType, areExtensionsEnabled: boolean): string => {
   if (event.user) {
     return staffMemberDetailsUrl(event.user.id);
   }
 
   if (event.app) {
-    return AppPaths.resolveAppPath(event.app.id);
+    if (areExtensionsEnabled) {
+      return ExtensionsUrls.resolveViewManifestExtensionUrl(event.app.id);
+    }
+
+    return AppUrls.resolveAppUrl(event.app.id);
   }
 
   return null;
 };
-const getEventMessage = (event: GiftCardEventFragment, intl: IntlShape) => {
+const getEventMessage = (
+  event: GiftCardEventType,
+  intl: IntlShape,
+  areExtensionsEnabled: boolean,
+) => {
   const user = getUserOrApp(event);
-  const userUrl = getUserOrAppUrl(event);
+  const userUrl = getUserOrAppUrl(event, areExtensionsEnabled);
 
   switch (event.type) {
     case GiftCardEventsEnum.ACTIVATED:
@@ -107,13 +119,20 @@ const getEventMessage = (event: GiftCardEventFragment, intl: IntlShape) => {
 
 export interface GiftCardTimelineEventProps {
   date: string;
-  event: GiftCardEventFragment;
+  event: GiftCardEventType;
 }
 
 const GiftCardTimelineEvent: React.FC<GiftCardTimelineEventProps> = ({ date, event }) => {
   const intl = useIntl();
+  const { enabled: areExtensionsEnabled } = useFlag("extensions");
 
-  return <TimelineEvent date={date} title={getEventMessage(event, intl)} hasPlainDate={false} />;
+  return (
+    <TimelineEvent
+      date={date}
+      title={getEventMessage(event, intl, areExtensionsEnabled)}
+      hasPlainDate={false}
+    />
+  );
 };
 
 export default GiftCardTimelineEvent;

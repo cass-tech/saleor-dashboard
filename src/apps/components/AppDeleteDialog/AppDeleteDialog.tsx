@@ -1,7 +1,6 @@
 import ActionDialog from "@dashboard/components/ActionDialog";
 import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButton";
 import { getStringOrPlaceholder } from "@dashboard/misc";
-import { DialogContentText } from "@material-ui/core";
 import { Box, Text } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -17,6 +16,7 @@ export interface AppDeleteDialogProps {
   type: "CUSTOM" | "EXTERNAL";
 }
 
+/** @deprecated Use component from extensions/ */
 const AppDeleteDialog: React.FC<AppDeleteDialogProps> = ({
   confirmButtonState,
   open,
@@ -57,7 +57,7 @@ const AppDeleteDialog: React.FC<AppDeleteDialogProps> = ({
       title={intl.formatMessage(msgs.deleteAppTitle)}
       variant="delete"
     >
-      <DialogContentText data-test-id="dialog-content" style={{ marginTop: "-12px" }}>
+      <Box data-test-id="dialog-content">
         <Box
           backgroundColor="warning1"
           padding={2}
@@ -67,10 +67,12 @@ const AppDeleteDialog: React.FC<AppDeleteDialogProps> = ({
           borderColor="warning1"
           borderStyle="solid"
         >
-          <Text size={2}>{intl.formatMessage(msgs.deleteAppWarning)}</Text>
+          <Text size={2} color="warning1">
+            {intl.formatMessage(msgs.deleteAppWarning)}
+          </Text>
         </Box>
         {getMainText()} <FormattedMessage {...msgs.deleteAppQuestion} />
-      </DialogContentText>
+      </Box>
     </ActionDialog>
   );
 };

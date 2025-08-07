@@ -16,13 +16,15 @@ import {
   useUpdateMetadataMutation,
   useUpdatePrivateMetadataMutation,
   useVariantCreateMutation,
-  useWarehouseListQuery,
 } from "@dashboard/graphql";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useNotifier from "@dashboard/hooks/useNotifier";
 import useShop from "@dashboard/hooks/useShop";
+import useCategorySearch from "@dashboard/searches/useCategorySearch";
+import useCollectionSearch from "@dashboard/searches/useCollectionSearch";
 import usePageSearch from "@dashboard/searches/usePageSearch";
 import useProductSearch from "@dashboard/searches/useProductSearch";
+import useWarehouseSearch from "@dashboard/searches/useWarehouseSearch";
 import useAttributeValueSearchHandler from "@dashboard/utils/handlers/attributeValueSearchHandler";
 import createMetadataCreateHandler from "@dashboard/utils/handlers/metadataCreateHandler";
 import { mapEdgesToItems } from "@dashboard/utils/maps";
@@ -52,12 +54,16 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
   const notify = useNotifier();
   const shop = useShop();
   const intl = useIntl();
-  const warehouses = useWarehouseListQuery({
-    displayLoader: true,
+
+  const { loadMore: fetchMoreWarehouses, result: searchWarehousesResult } = useWarehouseSearch({
     variables: {
-      first: 50,
+      first: 100,
+      channnelsId: [],
+      query: "",
     },
+    skip: true,
   });
+
   const { data, loading: productLoading } = useProductVariantCreateDataQuery({
     displayLoader: true,
     variables: {
@@ -71,11 +77,20 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
     onCompleted: data => {
       const variantId = data.productVariantCreate.productVariant.id;
 
+      if (!variantId) {
+        notify({
+          status: "error",
+          text: intl.formatMessage(messages.variantCreatedError),
+        });
+
+        return;
+      }
+
       notify({
         status: "success",
         text: intl.formatMessage(messages.variantCreatedSuccess),
       });
-      navigate(productVariantEditUrl(productId, variantId), {
+      navigate(productVariantEditUrl(variantId), {
         resetScroll: true,
       });
     },
@@ -94,6 +109,7 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
       formData.attributesWithNewFileValue,
       uploadFilesResult,
     );
+
     const variantCreateResult = await variantCreate({
       variables: {
         input: {
@@ -132,7 +148,12 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
       return { id: null, errors: variantCreateResultErrors };
     }
 
-    const id = variantCreateResult.data.productVariantCreate.productVariant.id;
+    const id = variantCreateResult.data?.productVariantCreate?.productVariant?.id;
+
+    if (!id) {
+      return { id: null, errors: [] };
+    }
+
     const updateChannelsResult = await updateChannels({
       variables: {
         id,
@@ -153,7 +174,7 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
     updateMetadata,
     updatePrivateMetadata,
   );
-  const handleVariantClick = (id: string) => navigate(productVariantEditUrl(productId, id));
+  const handleVariantClick = (id: string) => navigate(productVariantEditUrl(id));
   const handleAssignAttributeReferenceClick = (attribute: AttributeInput) =>
     navigate(
       productVariantAddUrl(productId, {
@@ -174,6 +195,12 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
     search: searchProducts,
     result: searchProductsOpts,
   } = useProductSearch({
+    variables: DEFAULT_INITIAL_SEARCH_DATA,
+  });
+  const { result: searchCategoriesOpts } = useCategorySearch({
+    variables: DEFAULT_INITIAL_SEARCH_DATA,
+  });
+  const { result: searchCollectionsOpts } = useCollectionSearch({
     variables: DEFAULT_INITIAL_SEARCH_DATA,
   });
   const {
@@ -227,6 +254,8 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
           defaultMessage: "Create Variant",
           description: "header",
         })}
+        fetchMoreWarehouses={fetchMoreWarehouses}
+        searchWarehousesResult={searchWarehousesResult}
         product={data?.product}
         attributeValues={attributeValues}
         onSubmit={handleSubmit}
@@ -234,12 +263,13 @@ export const ProductVariant: React.FC<ProductVariantCreateProps> = ({ productId,
         onWarehouseConfigure={() => navigate(warehouseAddPath)}
         onVariantReorder={handleVariantReorder}
         saveButtonBarState={variantCreateResult.status}
-        warehouses={mapEdgesToItems(warehouses?.data?.warehouses) || []}
         weightUnit={shop?.defaultWeightUnit}
         assignReferencesAttributeId={params.action === "assign-attribute-value" && params.id}
         onAssignReferencesClick={handleAssignAttributeReferenceClick}
         referencePages={mapEdgesToItems(searchPagesOpts?.data?.search) || []}
         referenceProducts={mapEdgesToItems(searchProductsOpts?.data?.search) || []}
+        referenceCategories={mapEdgesToItems(searchCategoriesOpts?.data?.search) || []}
+        referenceCollections={mapEdgesToItems(searchCollectionsOpts?.data?.search) || []}
         fetchReferencePages={searchPages}
         fetchMoreReferencePages={fetchMoreReferencePages}
         fetchReferenceProducts={searchProducts}

@@ -21,15 +21,16 @@ export const RefundTableReasonCell: React.FC<RefundTableReasonCellProps> = ({
   return (
     <GridTable.Cell>
       <Button
+        data-test-id="line-refund-reason-button"
         variant="secondary"
         whiteSpace="nowrap"
         onClick={() => onEditReasonModal(index)}
         disabled={!field.quantity}
       >
         {!field.reason ? (
-          <FormattedMessage {...refundTableMessages.addReason} />
+          <FormattedMessage {...refundTableMessages.addReasonBtn} />
         ) : (
-          <FormattedMessage {...refundTableMessages.editReason} />
+          <FormattedMessage {...refundTableMessages.editReasonBtn} />
         )}
       </Button>
     </GridTable.Cell>

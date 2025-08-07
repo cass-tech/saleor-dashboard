@@ -18,6 +18,7 @@ import { GrantRefundCheckbox } from "./GrantRefundCheckbox";
 import { submitCardMessages } from "./messages";
 import RefundShipmentCheckbox from "./RefundShipmentCheckbox";
 import { SendRefundCheckbox } from "./SendRefundCheckbox";
+import { TransactionSelector } from "./TransactionSelector";
 
 interface TransactionSubmitCardProps {
   disabled: boolean;
@@ -35,6 +36,7 @@ interface TransactionSubmitCardProps {
   sendRefundErrors: TransactionRequestRefundForGrantedRefundErrorFragment[];
   transactions: OrderDetailsFragment["transactions"];
   isAmountDirty: boolean;
+  transactionId?: string;
   onAmountChange: (value: number) => void;
 }
 
@@ -53,6 +55,7 @@ export const TransactionSubmitCard = ({
   sendRefundErrors,
   transactions,
   isAmountDirty,
+  transactionId,
   onAmountChange,
 }: TransactionSubmitCardProps) => {
   const intl = useIntl();
@@ -61,12 +64,16 @@ export const TransactionSubmitCard = ({
     transactions,
   });
 
+  const isSubmitDisabled = (!transactionId && autoGrantRefund) || disabled;
+
   return (
     <div>
       <DashboardCard>
-        <DashboardCard.Title>
-          {intl.formatMessage(submitCardMessages.cardTitle)}
-        </DashboardCard.Title>
+        <DashboardCard.Header>
+          <DashboardCard.Title>
+            {intl.formatMessage(submitCardMessages.cardTitle)}
+          </DashboardCard.Title>
+        </DashboardCard.Header>
         <DashboardCard.Content display="flex" flexDirection="column" gap={2} alignItems="start">
           <Box display="flex" gap={1} alignItems="center" marginBottom={4}>
             <InfoIcon color="default2" size="small" />
@@ -79,6 +86,13 @@ export const TransactionSubmitCard = ({
             grantRefundErrors={grantRefundErrors}
             onChange={onChange}
           />
+          {autoGrantRefund && (
+            <TransactionSelector
+              transactions={transactions}
+              onChange={onChange}
+              value={transactionId}
+            />
+          )}
           <SendRefundCheckbox
             canSendRefund={canSendRefund}
             autoSendRefund={autoSendRefund}
@@ -104,18 +118,19 @@ export const TransactionSubmitCard = ({
             })}
             currencySymbol={amountData?.refundTotalAmount?.currency}
             disabled={!autoGrantRefund}
+            width="100%"
           />
-          <Box display="flex" alignSelf="end" marginTop={4}>
-            <ConfirmButton
-              data-test-id="return-submit-button"
-              transitionState={submitStatus}
-              disabled={disabled}
-              variant="primary"
-              onClick={onSubmit}
-            >
-              <FormattedMessage {...submitCardMessages.submitButton} />
-            </ConfirmButton>
-          </Box>
+          <ConfirmButton
+            data-test-id="return-submit-button"
+            transitionState={submitStatus}
+            disabled={isSubmitDisabled}
+            variant="primary"
+            onClick={onSubmit}
+            width="100%"
+            marginTop={4}
+          >
+            <FormattedMessage {...submitCardMessages.submitButton} />
+          </ConfirmButton>
         </DashboardCard.Content>
       </DashboardCard>
     </div>

@@ -6,7 +6,7 @@ import { slugFromConditionValue } from "../FilterElement/ConditionValue";
 
 export const CONDITIONS = ["is", "equals", "in", "between", "lower", "greater"];
 
-const STATIC_TO_LOAD = [
+const PRODUCT_STATICS = [
   "category",
   "collection",
   "channel",
@@ -18,6 +18,52 @@ const STATIC_TO_LOAD = [
   "giftCard",
 ];
 
+const ORDER_STATICS = [
+  "paymentStatus",
+  "status",
+  "authorizeStatus",
+  "chargeStatus",
+  "giftCardBought",
+  "giftCardUsed",
+  "isPreorder",
+  "isClickAndCollect",
+  "channels",
+  "ids",
+];
+
+const VOUCHER_STATICS = ["channel", "discountType", "voucherStatus"];
+
+const PAGE_STATIC = ["pageTypes"];
+
+const GIFT_CARDS_STATICS = ["currency", "products", "isActive", "tags", "usedBy"];
+
+const COLLECTION_STATICS = ["channel", "published"];
+
+const PRODUCT_TYPES_STATICS = ["typeOfProduct", "configurable"];
+
+const STAFF_MEMBERS_STATICS = ["staffMemberStatus"];
+
+const ATTRIBUTES_STATICS = [
+  "channel",
+  "attributeType",
+  "filterableInStorefront",
+  "isVariantOnly",
+  "valueRequired",
+  "visibleInStorefront",
+];
+
+const STATIC_TO_LOAD = [
+  ...PRODUCT_STATICS,
+  ...ORDER_STATICS,
+  ...VOUCHER_STATICS,
+  ...PAGE_STATIC,
+  ...GIFT_CARDS_STATICS,
+  ...COLLECTION_STATICS,
+  ...PRODUCT_TYPES_STATICS,
+  ...STAFF_MEMBERS_STATICS,
+  ...ATTRIBUTES_STATICS,
+];
+
 export const TokenType = {
   ATTRIBUTE_DROPDOWN: "o",
   ATTRIBUTE_MULTISELECT: "m",
@@ -25,6 +71,7 @@ export const TokenType = {
   ATTRIBUTE_DATE_TIME: "t",
   ATTRIBUTE_DATE: "d",
   ATTRIBUTE_BOOLEAN: "b",
+  ATTRIBUTE_REFERENCE: "r",
   STATIC: "s",
 } as const;
 
@@ -55,6 +102,12 @@ export class UrlEntry {
   public static forAttribute(condition: ConditionSelected, paramName: string) {
     const inputType = getAttributeInputType(condition.conditionValue);
     const tokenSlug = resolveTokenType(inputType || "");
+
+    return UrlEntry.fromConditionSelected(condition, paramName, tokenSlug);
+  }
+
+  public static forReferenceAttribute(condition: ConditionSelected, paramName: string) {
+    const tokenSlug = resolveTokenType("REFERENCE");
 
     return UrlEntry.fromConditionSelected(condition, paramName, tokenSlug);
   }
@@ -116,7 +169,9 @@ export class UrlToken {
 
   public hasDynamicValues() {
     return (
-      TokenType.ATTRIBUTE_DROPDOWN === this.type || TokenType.ATTRIBUTE_MULTISELECT === this.type
+      TokenType.ATTRIBUTE_DROPDOWN === this.type ||
+      TokenType.ATTRIBUTE_MULTISELECT === this.type ||
+      TokenType.ATTRIBUTE_REFERENCE === this.type
     );
   }
 

@@ -1,18 +1,19 @@
 // @ts-strict-ignore
-import {
-  extensionMountPoints,
-  mapToMenuItems,
-  mapToMenuItemsForCustomerOverviewActions,
-  useExtensions,
-} from "@dashboard/apps/hooks/useExtensions";
 import { useUserPermissions } from "@dashboard/auth/hooks/useUserPermissions";
 import { ListFilters } from "@dashboard/components/AppLayout/ListFilters";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import { BulkDeleteButton } from "@dashboard/components/BulkDeleteButton";
-import { ButtonWithDropdown } from "@dashboard/components/ButtonWithDropdown";
+import { ButtonGroupWithDropdown } from "@dashboard/components/ButtonGroupWithDropdown";
 import { FilterPresetsSelect } from "@dashboard/components/FilterPresetsSelect";
 import { Customers } from "@dashboard/customers/types";
 import { customerAddUrl, CustomerListUrlSortField, customerUrl } from "@dashboard/customers/urls";
+import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
+import {
+  getExtensionItemsForOverviewCreate,
+  getExtensionsItemsForCustomerOverviewActions,
+} from "@dashboard/extensions/getExtensionsItems";
+import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
+import { useFlag } from "@dashboard/featureFlags";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
 import { FilterPagePropsWithPresets, PageListProps, SortPage } from "@dashboard/types";
@@ -56,14 +57,15 @@ const CustomerListPage: React.FC<CustomerListPageProps> = ({
   const userPermissions = useUserPermissions();
   const structure = createFilterStructure(intl, filterOpts, userPermissions);
   const [isFilterPresetOpen, setFilterPresetOpen] = useState(false);
+  const { enabled: isCustomersFiltersEnabled } = useFlag("new_filters");
   const { CUSTOMER_OVERVIEW_CREATE, CUSTOMER_OVERVIEW_MORE_ACTIONS } = useExtensions(
     extensionMountPoints.CUSTOMER_LIST,
   );
-  const extensionMenuItems = mapToMenuItemsForCustomerOverviewActions(
+  const extensionMenuItems = getExtensionsItemsForCustomerOverviewActions(
     CUSTOMER_OVERVIEW_MORE_ACTIONS,
     selectedCustomerIds,
   );
-  const extensionCreateButtonItems = mapToMenuItems(CUSTOMER_OVERVIEW_CREATE);
+  const extensionCreateButtonItems = getExtensionItemsForOverviewCreate(CUSTOMER_OVERVIEW_CREATE);
 
   return (
     <>
@@ -98,7 +100,7 @@ const CustomerListPage: React.FC<CustomerListPageProps> = ({
           <Box display="flex" alignItems="center" gap={2}>
             {extensionMenuItems.length > 0 && <TopNav.Menu items={extensionMenuItems} />}
             {extensionCreateButtonItems.length > 0 ? (
-              <ButtonWithDropdown
+              <ButtonGroupWithDropdown
                 options={extensionCreateButtonItems}
                 data-test-id="create-customer"
                 onClick={() => navigate(customerAddUrl)}
@@ -108,7 +110,7 @@ const CustomerListPage: React.FC<CustomerListPageProps> = ({
                   defaultMessage="Create customer"
                   description="button"
                 />
-              </ButtonWithDropdown>
+              </ButtonGroupWithDropdown>
             ) : (
               <Button data-test-id="create-customer" onClick={() => navigate(customerAddUrl)}>
                 <FormattedMessage
@@ -122,25 +124,46 @@ const CustomerListPage: React.FC<CustomerListPageProps> = ({
         </Box>
       </TopNav>
       <Box>
-        <ListFilters
-          filterStructure={structure}
-          initialSearch={initialSearch}
-          searchPlaceholder={intl.formatMessage({
-            id: "kdRcqU",
-            defaultMessage: "Search customers...",
-          })}
-          onFilterChange={onFilterChange}
-          onSearchChange={onSearchChange}
-          actions={
-            <Box display="flex" gap={4}>
-              {selectedCustomerIds.length > 0 && (
-                <BulkDeleteButton onClick={onCustomersDelete}>
-                  <FormattedMessage defaultMessage="Delete customers" id="kFsTMN" />
-                </BulkDeleteButton>
-              )}
-            </Box>
-          }
-        />
+        {isCustomersFiltersEnabled ? (
+          <ListFilters
+            type="expression-filter"
+            initialSearch={initialSearch}
+            searchPlaceholder={intl.formatMessage({
+              id: "kdRcqU",
+              defaultMessage: "Search customers...",
+            })}
+            onSearchChange={onSearchChange}
+            actions={
+              <Box display="flex" gap={4}>
+                {selectedCustomerIds.length > 0 && (
+                  <BulkDeleteButton onClick={onCustomersDelete}>
+                    <FormattedMessage defaultMessage="Delete customers" id="kFsTMN" />
+                  </BulkDeleteButton>
+                )}
+              </Box>
+            }
+          />
+        ) : (
+          <ListFilters
+            filterStructure={structure}
+            initialSearch={initialSearch}
+            searchPlaceholder={intl.formatMessage({
+              id: "kdRcqU",
+              defaultMessage: "Search customers...",
+            })}
+            onFilterChange={onFilterChange}
+            onSearchChange={onSearchChange}
+            actions={
+              <Box display="flex" gap={4}>
+                {selectedCustomerIds.length > 0 && (
+                  <BulkDeleteButton onClick={onCustomersDelete}>
+                    <FormattedMessage defaultMessage="Delete customers" id="kFsTMN" />
+                  </BulkDeleteButton>
+                )}
+              </Box>
+            }
+          />
+        )}
         <CustomerListDatagrid
           {...customerListProps}
           hasRowHover={!isFilterPresetOpen}

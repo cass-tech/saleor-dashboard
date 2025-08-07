@@ -7,7 +7,9 @@ export const initialDynamicLeftOperands = gql`
       search: $query
       where: {
         type: { eq: PRODUCT_TYPE }
-        inputType: { oneOf: [DROPDOWN, MULTISELECT, BOOLEAN, NUMERIC, DATE, DATE_TIME, SWATCH] }
+        inputType: {
+          oneOf: [DROPDOWN, MULTISELECT, BOOLEAN, NUMERIC, DATE, DATE_TIME, SWATCH, REFERENCE]
+        }
       }
     ) {
       edges {
@@ -16,6 +18,7 @@ export const initialDynamicLeftOperands = gql`
           name
           slug
           inputType
+          entityType
           __typename
         }
         __typename
@@ -29,6 +32,14 @@ export const initialDynamicOperands = gql`
   query _GetChannelOperands {
     channels {
       id: slug
+      name
+      slug
+    }
+  }
+
+  query _GetLegacyChannelOperands {
+    channels {
+      id
       name
       slug
     }
@@ -70,6 +81,18 @@ export const initialDynamicOperands = gql`
     }
   }
 
+  query _SearchPageTypesOperands($first: Int!, $pageTypesSlugs: [String!]) {
+    pageTypes(first: $first, filter: { slugs: $pageTypesSlugs }) {
+      edges {
+        node {
+          id
+          name
+          slug
+        }
+      }
+    }
+  }
+
   query _SearchAttributeOperands($attributesSlugs: [String!], $choicesIds: [ID!], $first: Int!) {
     attributes(first: $first, filter: { slugs: $attributesSlugs }) {
       edges {
@@ -78,6 +101,7 @@ export const initialDynamicOperands = gql`
           name
           slug
           inputType
+          entityType
           choices(first: 5, filter: { ids: $choicesIds }) {
             edges {
               node {
@@ -141,6 +165,138 @@ export const dynamicOperandsQueries = gql`
           id
           name
           slug
+        }
+      }
+    }
+  }
+
+  query _GetPageTypesChoices($first: Int!, $query: String!) {
+    pageTypes(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          name
+          slug
+        }
+      }
+    }
+  }
+
+  query _GetPagesChoices($first: Int!, $query: String!) {
+    pages(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          name: title
+          slug
+          originalSlug: slug
+        }
+      }
+    }
+  }
+
+  query _GetProductChoices($first: Int!, $query: String!) {
+    products(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          name
+          slug
+        }
+      }
+    }
+  }
+
+  query _GetProductVariantChoices($first: Int!, $query: String!) {
+    productVariants(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          name
+          slug: id
+          originalSlug: name
+          product {
+            name
+          }
+        }
+      }
+    }
+  }
+
+  query _GetGiftCardTagsChoices($first: Int!, $query: String!) {
+    giftCardTags(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+
+  query _GetCustomersChoices($first: Int!, $query: String!) {
+    customers(first: $first, filter: { search: $query }) {
+      edges {
+        node {
+          id
+          email
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+
+  query _SearchCustomersOperands($first: Int!, $customersIds: [ID!]) {
+    customers(first: $first, filter: { ids: $customersIds }) {
+      edges {
+        node {
+          id
+          email
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+
+  query _SearchPageOperands($first: Int!, $pageSlugs: [String!]) {
+    pages(first: $first, filter: { slugs: $pageSlugs }) {
+      edges {
+        node {
+          id
+          name: title
+          slug
+          originalSlug: slug
+        }
+      }
+    }
+  }
+
+  query _SearchProductOperands($first: Int!, $productSlugs: [String!]) {
+    products(first: $first, where: { slug: { oneOf: $productSlugs } }) {
+      edges {
+        node {
+          id
+          name
+          slug
+          originalSlug: slug
+        }
+      }
+    }
+  }
+
+  query _SearchProductVariantOperands($first: Int!, $ids: [ID!]) {
+    productVariants(first: $first, where: { ids: $ids }) {
+      edges {
+        node {
+          id
+          name
+          slug: id
+          originalSlug: name
+          product {
+            name
+          }
         }
       }
     }

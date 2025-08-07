@@ -1,8 +1,8 @@
-import CardTitle from "@dashboard/components/CardTitle";
-import { ControlledCheckbox } from "@dashboard/components/ControlledCheckbox";
-import { Card, CardContent, TextField } from "@material-ui/core";
+import { DashboardCard } from "@dashboard/components/Card";
+import { ChangeEvent } from "@dashboard/hooks/useForm";
+import { Checkbox, Input, Text } from "@saleor/macaw-ui-next";
 import React from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 interface ProductTypeShippingProps {
   data: {
@@ -11,7 +11,7 @@ interface ProductTypeShippingProps {
   };
   weightUnit: string;
   disabled: boolean;
-  onChange: (event: React.ChangeEvent<any>) => void;
+  onChange: (event: ChangeEvent) => void;
 }
 
 const ProductTypeShipping: React.FC<ProductTypeShippingProps> = ({
@@ -23,30 +23,41 @@ const ProductTypeShipping: React.FC<ProductTypeShippingProps> = ({
   const intl = useIntl();
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage({
-          id: "/2OOMe",
-          defaultMessage: "Shipping",
-          description: "product type shipping settings, section header",
-        })}
-      />
-      <CardContent>
-        <ControlledCheckbox
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "/2OOMe",
+            defaultMessage: "Shipping",
+            description: "product type shipping settings, section header",
+          })}
+        </DashboardCard.Title>
+      </DashboardCard.Header>
+      <DashboardCard.Content>
+        <Checkbox
           checked={data.isShippingRequired}
           disabled={disabled}
-          label={intl.formatMessage({
-            id: "IBw72y",
-            defaultMessage: "Is this product shippable?",
-            description: "switch button",
-          })}
           name="isShippingRequired"
-          onChange={onChange}
-        />
+          data-test-id="isShippingRequired"
+          onCheckedChange={checked =>
+            onChange({
+              target: { name: "isShippingRequired", value: checked },
+            })
+          }
+          marginBottom={2}
+        >
+          <Text>
+            <FormattedMessage
+              id="IBw72y"
+              defaultMessage="Is this product shippable?"
+              description="switch button"
+            />
+          </Text>
+        </Checkbox>
         {data.isShippingRequired && (
-          <TextField
+          <Input
             disabled={disabled}
-            InputProps={{ endAdornment: weightUnit }}
+            endAdornment={<Text color="default2">{weightUnit}</Text>}
             label={intl.formatMessage({
               id: "zCb8fX",
               defaultMessage: "Weight",
@@ -58,12 +69,12 @@ const ProductTypeShipping: React.FC<ProductTypeShippingProps> = ({
                 "Used to calculate rates for shipping for products of this product type, when specific weight is not given",
             })}
             type="number"
-            value={data.weight}
+            value={data.weight || 0}
             onChange={onChange}
           />
         )}
-      </CardContent>
-    </Card>
+      </DashboardCard.Content>
+    </DashboardCard>
   );
 };
 

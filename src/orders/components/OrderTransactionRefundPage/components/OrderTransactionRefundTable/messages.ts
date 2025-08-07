@@ -17,11 +17,21 @@ export const refundTableMessages = defineMessages({
     description: "input adornment helper text",
   },
   addReason: {
+    id: "Fxahwt",
+    defaultMessage: "Add refund reason for this line",
+    description: "modal title",
+  },
+  editReason: {
+    id: "PALiyV",
+    defaultMessage: "Edit refund reason for this line",
+    description: "modal title",
+  },
+  addReasonBtn: {
     id: "B1yzuX",
     defaultMessage: "Add reason",
     description: "button label",
   },
-  editReason: {
+  editReasonBtn: {
     id: "I5vC7T",
     defaultMessage: "Edit reason",
     description: "button label",
@@ -30,10 +40,5 @@ export const refundTableMessages = defineMessages({
     id: "WigK1f",
     defaultMessage: "All items refunded",
     description: "helper text",
-  },
-  lineReasonDescription: {
-    id: "QisX+2",
-    defaultMessage: "You can specify a reason why this line is being returned.",
-    description: "reason per line helper text",
   },
 });

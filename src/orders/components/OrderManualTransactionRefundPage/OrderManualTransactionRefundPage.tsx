@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import { OrderManualTransactionRefundAmount } from "./components/OrderManualTransactionRefundAmount";
 import { OrderManualTransactionRefundForm } from "./components/OrderManualTransactionRefundForm";
 import { OrderManualTransactionRefundTiles } from "./components/OrderManualTransactionRefundTiles";
+import { OrderManualTransactionRefundWarning } from "./components/OrderManualTransactionRefundWarning/OrderManualTransactionRefundWarning";
 import { messages } from "./messages";
 
 interface OrderManualTransactionRefundProps {
@@ -38,7 +39,7 @@ export const OrderManualTransactionRefundPage = ({
       transactions={transactions}
     >
       <DetailPageLayout gridTemplateColumns={1}>
-        <TopNav href={orderUrl(orderId)} title={<FormattedMessage {...messages.transactions} />} />
+        <TopNav href={orderUrl(orderId)} title={<FormattedMessage {...messages.title} />} />
 
         <DetailPageLayout.Content>
           <DashboardCard>
@@ -52,17 +53,26 @@ export const OrderManualTransactionRefundPage = ({
           </DashboardCard>
         </DetailPageLayout.Content>
         <DetailPageLayout.RightSidebar>
-          <Box __maxWidth={400}>
-            <DashboardCard>
-              <DashboardCard.Title>
-                <FormattedMessage {...messages.sidebarTitle} />
-              </DashboardCard.Title>
-              <DashboardCard.Content>
-                <Text marginBottom={6} as="p">
-                  <FormattedMessage {...messages.sidebardDescription} />
-                </Text>
-
-                <OrderManualTransactionRefundAmount currency={currency} />
+          <Box __maxWidth={400} height="100%">
+            <DashboardCard height="100%">
+              <DashboardCard.Header>
+                <DashboardCard.Title>
+                  <FormattedMessage {...messages.refundAmount} />
+                </DashboardCard.Title>
+              </DashboardCard.Header>
+              <DashboardCard.Content
+                display="flex"
+                flexDirection="column"
+                justifyContent="space-between"
+                height="100%"
+              >
+                <Box>
+                  <Text as="p" paddingBottom={3}>
+                    <FormattedMessage {...messages.amountDescription} />
+                  </Text>
+                  <OrderManualTransactionRefundAmount currency={currency} />
+                </Box>
+                <OrderManualTransactionRefundWarning />
               </DashboardCard.Content>
             </DashboardCard>
           </Box>

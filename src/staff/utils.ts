@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import { StaffMemberDetailsFragment, UserFragment } from "@dashboard/graphql";
 import difference from "lodash/difference";
 
@@ -15,8 +14,8 @@ export const groupsDiff = (
     return {};
   }
 
-  const newGroups = formData.permissionGroups;
-  const oldGroups = user.permissionGroups.map(u => u.id);
+  const newGroups = formData.permissionGroups.map(u => u.value);
+  const oldGroups = user.permissionGroups?.map(u => u.id) ?? [];
 
   return {
     addGroups: difference(newGroups, oldGroups),

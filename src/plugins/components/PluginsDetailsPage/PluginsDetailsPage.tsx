@@ -5,7 +5,9 @@ import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButto
 import Form from "@dashboard/components/Form";
 import Grid from "@dashboard/components/Grid";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
+import { ExtensionsUrls } from "@dashboard/extensions/urls";
+import { useFlag } from "@dashboard/featureFlags";
 import {
   ConfigurationItemInput,
   PluginConfigurationExtendedFragment,
@@ -54,6 +56,7 @@ const PluginsDetailsPage: React.FC<PluginsDetailsPageProps> = ({
   setSelectedChannelId,
 }) => {
   const intl = useIntl();
+  const { enabled: isExtensionsDevEnabled } = useFlag("extensions");
   const navigate = useNavigator();
   const initialFormData: PluginDetailsPageFormData = {
     active: selectedConfig?.active,
@@ -95,7 +98,11 @@ const PluginsDetailsPage: React.FC<PluginsDetailsPageProps> = ({
         return (
           <DetailPageLayout gridTemplateColumns={1}>
             <TopNav
-              href={pluginListUrl()}
+              href={
+                isExtensionsDevEnabled
+                  ? ExtensionsUrls.resolveInstalledExtensionsUrl()
+                  : pluginListUrl()
+              }
               title={intl.formatMessage(
                 {
                   id: "EtGDeK",
@@ -150,12 +157,15 @@ const PluginsDetailsPage: React.FC<PluginsDetailsPageProps> = ({
                   )}
                 </div>
               </Grid>
-              <Savebar
-                disabled={isSaveDisabled}
-                state={saveButtonBarState}
-                onCancel={() => navigate(pluginListUrl())}
-                onSubmit={submit}
-              />
+              <Savebar>
+                <Savebar.Spacer />
+                <Savebar.CancelButton onClick={() => navigate(pluginListUrl())} />
+                <Savebar.ConfirmButton
+                  transitionState={saveButtonBarState}
+                  onClick={submit}
+                  disabled={isSaveDisabled}
+                />
+              </Savebar>
             </DetailPageLayout.Content>
           </DetailPageLayout>
         );

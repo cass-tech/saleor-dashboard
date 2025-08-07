@@ -2,60 +2,24 @@ import { defineMessages } from "react-intl";
 
 export const giftCardsListHeaderMenuItemsMessages = defineMessages({
   settings: {
-    id: "F69lwk",
+    id: "yhq0gU",
     defaultMessage: "Settings",
-    description: "settings menu item",
+    description: "settings structure item",
   },
   bulkIssue: {
-    id: "9hab/1",
+    id: "sDMNfc",
     defaultMessage: "Bulk Issue",
-    description: "bulk issue menu item",
+    description: "bulk issue structure item",
   },
   exportCodes: {
-    id: "exvX+Z",
+    id: "JJ3PCA",
     defaultMessage: "Export card codes",
-    description: "export card codes menu item",
+    description: "export card codes structure item",
   },
   issueButtonLabel: {
     id: "RfPJ1E",
     defaultMessage: "Issue card",
     description: "issue card button label",
-  },
-  noGiftCardsAlertTitle: {
-    id: "E22x4H",
-    defaultMessage: "You haven’t defined a gift card product!",
-    description: "no card defuned alert message",
-  },
-  noGiftCardsProductsAndProductTypes: {
-    id: "U9o2bV",
-    defaultMessage:
-      "{createGiftCardProductType} and {giftCardProduct} to start selling gift cards in your store.",
-    description: "no gift card products and types alert message",
-  },
-  noGiftCardsProductTypes: {
-    id: "VI+X8H",
-    defaultMessage: "{createGiftCardProductType} to start selling gift cards in your store.",
-    description: "no gift card product types alert message",
-  },
-  noGiftCardsProducts: {
-    id: "jmh0rV",
-    defaultMessage: "{createGiftCardProduct} to start selling gift cards in your store.",
-    description: "no gift card products alert message",
-  },
-  createGiftCardProductType: {
-    id: "8Hq18g",
-    defaultMessage: "Create a gift card product type",
-    description: "create gift card product type alert message",
-  },
-  createGiftCardProduct: {
-    id: "HqeqEV",
-    defaultMessage: "Create a gift card product",
-    description: "create gift card product alert message",
-  },
-  giftCardProduct: {
-    id: "AJgl5u",
-    defaultMessage: "gift card product",
-    description: "gift card product message",
   },
 });
 

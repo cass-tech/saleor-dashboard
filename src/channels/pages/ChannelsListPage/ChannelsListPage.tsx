@@ -2,21 +2,22 @@
 import { channelAddUrl, channelUrl } from "@dashboard/channels/urls";
 import { LimitsInfo } from "@dashboard/components/AppLayout/LimitsInfo";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
-import { Button } from "@dashboard/components/Button";
+import { DashboardCard } from "@dashboard/components/Card";
 import { ListPageLayout } from "@dashboard/components/Layouts";
 import LimitReachedAlert from "@dashboard/components/LimitReachedAlert";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
-import Skeleton from "@dashboard/components/Skeleton";
 import { TableButtonWrapper } from "@dashboard/components/TableButtonWrapper/TableButtonWrapper";
 import TableCellHeader from "@dashboard/components/TableCellHeader";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import { configurationMenuUrl } from "@dashboard/configuration";
 import { ChannelDetailsFragment, RefreshLimitsQuery } from "@dashboard/graphql";
+import useNavigator from "@dashboard/hooks/useNavigator";
 import { sectionNames } from "@dashboard/intl";
 import { renderCollection, stopPropagation } from "@dashboard/misc";
 import { hasLimits, isLimitReached } from "@dashboard/utils/limits";
-import { Card, TableBody, TableCell, TableHead } from "@material-ui/core";
-import { DeleteIcon, IconButton } from "@saleor/macaw-ui";
+import { TableBody, TableCell, TableHead } from "@material-ui/core";
+import { DeleteIcon } from "@saleor/macaw-ui";
+import { Button, Skeleton } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -38,15 +39,16 @@ export const ChannelsListPage: React.FC<ChannelsListPageProps> = ({
   const intl = useIntl();
   const classes = useStyles({});
   const limitReached = isLimitReached(limits, "channels");
+  const navigator = useNavigator();
 
   return (
     <ListPageLayout>
       <TopNav href={configurationMenuUrl} title={intl.formatMessage(sectionNames.channels)}>
         <Button
           disabled={limitReached}
-          href={channelAddUrl}
           variant="primary"
           data-test-id="add-channel"
+          onClick={() => navigator(channelAddUrl)}
         >
           <FormattedMessage id="OGm8wO" defaultMessage="Create Channel" description="button" />
         </Button>
@@ -80,7 +82,7 @@ export const ChannelsListPage: React.FC<ChannelsListPageProps> = ({
           />
         </LimitReachedAlert>
       )}
-      <Card>
+      <DashboardCard>
         <ResponsiveTable>
           <TableHead>
             <TableRowLink>
@@ -117,16 +119,16 @@ export const ChannelsListPage: React.FC<ChannelsListPageProps> = ({
                   <TableCell className={classes.colAction}>
                     {channelsList?.length > 1 && (
                       <TableButtonWrapper>
-                        <IconButton
+                        <Button
                           variant="secondary"
-                          color="primary"
                           data-test-id="delete-channel"
+                          icon={<DeleteIcon />}
                           onClick={
                             channel ? stopPropagation(() => onRemove(channel.id)) : undefined
                           }
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                          marginLeft="auto"
+                          marginRight={1}
+                        />
                       </TableButtonWrapper>
                     )}
                   </TableCell>
@@ -142,7 +144,7 @@ export const ChannelsListPage: React.FC<ChannelsListPageProps> = ({
             )}
           </TableBody>
         </ResponsiveTable>
-      </Card>
+      </DashboardCard>
     </ListPageLayout>
   );
 };

@@ -1,13 +1,11 @@
 // @ts-strict-ignore
-import { Button } from "@dashboard/components/Button";
-import CardTitle from "@dashboard/components/CardTitle";
+import { DashboardCard } from "@dashboard/components/Card";
 import ResponsiveTable from "@dashboard/components/ResponsiveTable";
-import Skeleton from "@dashboard/components/Skeleton";
 import TableRowLink from "@dashboard/components/TableRowLink";
 import { AppUpdateMutation } from "@dashboard/graphql";
 import { renderCollection } from "@dashboard/misc";
-import { Card, CardContent, TableBody, TableCell, TableHead } from "@material-ui/core";
-import { DeleteIcon, IconButton } from "@saleor/macaw-ui";
+import { TableBody, TableCell, TableHead } from "@material-ui/core";
+import { Button, Skeleton, TrashBinIcon } from "@saleor/macaw-ui-next";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -26,21 +24,23 @@ const CustomAppTokens: React.FC<CustomAppTokensProps> = props => {
   const intl = useIntl();
 
   return (
-    <Card>
-      <CardTitle
-        title={intl.formatMessage({
-          id: "0Mg8o5",
-          defaultMessage: "Tokens",
-          description: "header",
-        })}
-        className={classes.cardTitle}
-        toolbar={
+    <DashboardCard>
+      <DashboardCard.Header>
+        <DashboardCard.Title>
+          {intl.formatMessage({
+            id: "0Mg8o5",
+            defaultMessage: "Tokens",
+            description: "header",
+          })}
+        </DashboardCard.Title>
+        <DashboardCard.Toolbar>
           <Button variant="secondary" onClick={onCreate} data-test-id="create-token">
             <FormattedMessage id="RMB6fU" defaultMessage="Create Token" description="button" />
           </Button>
-        }
-      />
-      <CardContent>
+        </DashboardCard.Toolbar>
+      </DashboardCard.Header>
+
+      <DashboardCard.Content paddingX={0}>
         <ResponsiveTable>
           <TableHead>
             <TableRowLink>
@@ -73,13 +73,12 @@ const CustomAppTokens: React.FC<CustomAppTokensProps> = props => {
                     {token?.authToken ? `**** ${token.authToken}` : <Skeleton />}
                   </TableCell>
                   <TableCell className={classes.colActions}>
-                    <IconButton
+                    <Button
+                      icon={<TrashBinIcon />}
                       variant="secondary"
-                      color="primary"
                       onClick={() => onDelete(token.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                      marginLeft="auto"
+                    />
                   </TableCell>
                 </TableRowLink>
               ),
@@ -93,8 +92,8 @@ const CustomAppTokens: React.FC<CustomAppTokensProps> = props => {
             )}
           </TableBody>
         </ResponsiveTable>
-      </CardContent>
-    </Card>
+      </DashboardCard.Content>
+    </DashboardCard>
   );
 };
 

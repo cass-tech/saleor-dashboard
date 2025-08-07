@@ -1,13 +1,11 @@
 // @ts-strict-ignore
-import {
-  extensionMountPoints,
-  mapToMenuItemsForProductDetails,
-  useExtensions,
-} from "@dashboard/apps/hooks/useExtensions";
+import { AppWidgets } from "@dashboard/apps/components/AppWidgets/AppWidgets";
 import {
   getReferenceAttributeEntityTypeFromAttribute,
   mergeAttributeValues,
 } from "@dashboard/attributes/utils/data";
+import { useUser } from "@dashboard/auth";
+import { hasPermission } from "@dashboard/auth/misc";
 import { ChannelData } from "@dashboard/channels/utils";
 import { TopNav } from "@dashboard/components/AppLayout/TopNav";
 import AssignAttributeValueDialog from "@dashboard/components/AssignAttributeValueDialog";
@@ -18,9 +16,11 @@ import { ConfirmButtonTransitionState } from "@dashboard/components/ConfirmButto
 import { useDevModeContext } from "@dashboard/components/DevModePanel/hooks";
 import { DetailPageLayout } from "@dashboard/components/Layouts";
 import { Metadata } from "@dashboard/components/Metadata/Metadata";
-import Savebar from "@dashboard/components/Savebar";
+import { Savebar } from "@dashboard/components/Savebar";
 import { SeoForm } from "@dashboard/components/SeoForm";
-import { Choice } from "@dashboard/components/SingleSelectField";
+import { extensionMountPoints } from "@dashboard/extensions/extensionMountPoints";
+import { getExtensionsItemsForProductDetails } from "@dashboard/extensions/getExtensionsItems";
+import { useExtensions } from "@dashboard/extensions/hooks/useExtensions";
 import {
   ChannelFragment,
   PermissionEnum,
@@ -38,19 +38,24 @@ import {
   SearchProductsQuery,
   TaxClassBaseFragment,
 } from "@dashboard/graphql";
+import { useBackLinkWithState } from "@dashboard/hooks/useBackLinkWithState";
 import { SubmitPromise } from "@dashboard/hooks/useForm";
 import useNavigator from "@dashboard/hooks/useNavigator";
 import useStateFromProps from "@dashboard/hooks/useStateFromProps";
 import { maybe } from "@dashboard/misc";
 import ProductExternalMediaDialog from "@dashboard/products/components/ProductExternalMediaDialog";
 import { ProductOrganization } from "@dashboard/products/components/ProductOrganization/ProductOrganization";
+import { mapByChannel } from "@dashboard/products/components/ProductUpdatePage/utils";
 import { defaultGraphiQLQuery } from "@dashboard/products/queries";
-import { productImageUrl, productListUrl } from "@dashboard/products/urls";
+import { productImageUrl, productListPath, productListUrl } from "@dashboard/products/urls";
 import { ChoiceWithAncestors, getChoicesWithAncestors } from "@dashboard/products/utils/utils";
 import { ProductVariantListError } from "@dashboard/products/views/ProductUpdate/handlers/errors";
 import { UseProductUpdateHandlerError } from "@dashboard/products/views/ProductUpdate/handlers/useProductUpdateHandler";
+import { TranslationsButton } from "@dashboard/translations/components/TranslationsButton/TranslationsButton";
+import { productUrl as createTranslateProductUrl } from "@dashboard/translations/urls";
+import { useCachedLocales } from "@dashboard/translations/useCachedLocales";
 import { FetchMoreProps, RelayToFlat } from "@dashboard/types";
-import { Box } from "@saleor/macaw-ui-next";
+import { Box, Divider, Option } from "@saleor/macaw-ui-next";
 import React from "react";
 import { useIntl } from "react-intl";
 
@@ -80,13 +85,15 @@ export interface ProductUpdatePageProps {
   limits: RefreshLimitsQuery["shop"]["limits"];
   variants: ProductDetailsVariantFragment[];
   media: ProductFragment["media"];
-  product: ProductDetailsQuery["product"];
+  product?: ProductDetailsQuery["product"];
   header: string;
   saveButtonBarState: ConfirmButtonTransitionState;
   taxClasses: TaxClassBaseFragment[];
   fetchMoreTaxClasses: FetchMoreProps;
   referencePages?: RelayToFlat<SearchPagesQuery["search"]>;
   referenceProducts?: RelayToFlat<SearchProductsQuery["search"]>;
+  referenceCategories?: RelayToFlat<SearchCategoriesQuery["search"]>;
+  referenceCollections?: RelayToFlat<SearchCollectionsQuery["search"]>;
   assignReferencesAttributeId?: string;
   fetchMoreReferencePages?: FetchMoreProps;
   fetchMoreReferenceProducts?: FetchMoreProps;
@@ -98,7 +105,7 @@ export interface ProductUpdatePageProps {
   fetchReferenceProducts?: (data: string) => void;
   fetchAttributeValues: (query: string, attributeId: string) => void;
   refetch: () => Promise<any>;
-  onAttributeValuesSearch: (id: string, query: string) => Promise<Array<Choice<string, string>>>;
+  onAttributeValuesSearch: (id: string, query: string) => Promise<Option[]>;
   onAssignReferencesClick: (attribute: AttributeInput) => void;
   onCloseDialog: () => void;
   onImageDelete: (id: string) => () => void;
@@ -137,6 +144,8 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
   fetchMoreTaxClasses,
   referencePages = [],
   referenceProducts = [],
+  referenceCategories = [],
+  referenceCollections = [],
   onDelete,
   onImageDelete,
   onImageReorder,
@@ -160,6 +169,9 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
   onAttributeSelectBlur,
 }) => {
   const intl = useIntl();
+  const { user } = useUser();
+  const canTranslate = user && hasPermission(PermissionEnum.MANAGE_TRANSLATIONS, user);
+  const { lastUsedLocaleOrFallback } = useCachedLocales();
   const navigate = useNavigator();
   const [channelPickerOpen, setChannelPickerOpen] = React.useState(false);
   const [selectedCategory, setSelectedCategory] = useStateFromProps(product?.category?.name || "");
@@ -198,7 +210,9 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
     handlers.selectAttributeReferenceMetadata(assignReferencesAttributeId, attributeValues);
     onCloseDialog();
   };
-  const { PRODUCT_DETAILS_MORE_ACTIONS } = useExtensions(extensionMountPoints.PRODUCT_DETAILS);
+  const { PRODUCT_DETAILS_MORE_ACTIONS, PRODUCT_DETAILS_WIDGETS } = useExtensions(
+    extensionMountPoints.PRODUCT_DETAILS,
+  );
   const productErrors = React.useMemo(
     () =>
       errors.filter(
@@ -213,16 +227,19 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
       ) as Array<ProductErrorFragment | ProductChannelListingErrorFragment>,
     [errors, channelsErrors],
   );
-  const extensionMenuItems = mapToMenuItemsForProductDetails(
-    PRODUCT_DETAILS_MORE_ACTIONS,
-    productId,
-  );
+  const extensionMenuItems = getExtensionsItemsForProductDetails(PRODUCT_DETAILS_MORE_ACTIONS, {
+    productId: productId,
+    productSlug: product?.slug,
+  });
   const context = useDevModeContext();
   const openPlaygroundURL = () => {
     context.setDevModeContent(defaultGraphiQLQuery);
     context.setVariables(`{ "id": "${product?.id}" }`);
     context.setDevModeVisibility(true);
   };
+  const backLinkProductUrl = useBackLinkWithState({
+    path: productListPath,
+  });
 
   return (
     <ProductUpdateForm
@@ -239,6 +256,8 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
       hasVariants={hasVariants}
       referencePages={referencePages}
       referenceProducts={referenceProducts}
+      referenceCategories={referenceCategories}
+      referenceCollections={referenceCollections}
       fetchReferencePages={fetchReferencePages}
       fetchMoreReferencePages={fetchMoreReferencePages}
       fetchReferenceProducts={fetchReferenceProducts}
@@ -269,16 +288,10 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
           onChange: handlers.changeChannels,
           openModal: () => setChannelPickerOpen(true),
         };
-        const listings = data.channels.updateChannels?.map<ChannelData>(listing => {
-          const channel = channels?.find(ac => ac.id === listing.channelId);
 
-          return {
-            ...channel,
-            ...listing,
-            id: listing.channelId,
-            currency: channel.currencyCode,
-          };
-        });
+        const byChannel = mapByChannel(channels);
+        const listings = data.channels.updateChannels?.map<ChannelData>(byChannel);
+
         const entityType = getReferenceAttributeEntityTypeFromAttribute(
           assignReferencesAttributeId,
           data.attributes,
@@ -286,7 +299,15 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
 
         return (
           <DetailPageLayout>
-            <TopNav href={productListUrl()} title={header}>
+            <TopNav href={backLinkProductUrl} title={header}>
+              {canTranslate && (
+                <TranslationsButton
+                  marginRight={3}
+                  onClick={() =>
+                    navigate(createTranslateProductUrl(lastUsedLocaleOrFallback, productId))
+                  }
+                />
+              )}
               <TopNav.Menu
                 items={[
                   ...extensionMenuItems,
@@ -335,6 +356,7 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                 />
               )}
               <ProductVariants
+                productId={productId}
                 productName={product?.name}
                 errors={variantListErrors}
                 channels={listings}
@@ -395,21 +417,39 @@ export const ProductUpdatePage: React.FC<ProductUpdatePageProps> = ({
                   onFetchMore={fetchMoreTaxClasses}
                 />
               </Box>
+              {PRODUCT_DETAILS_WIDGETS.length > 0 && productId && (
+                <>
+                  <Divider />
+                  <AppWidgets
+                    extensions={PRODUCT_DETAILS_WIDGETS}
+                    params={{
+                      productId: productId,
+                      productSlug: product?.slug,
+                    }}
+                  />
+                </>
+              )}
             </DetailPageLayout.RightSidebar>
 
-            <Savebar
-              onCancel={() => navigate(productListUrl())}
-              onDelete={onDelete}
-              onSubmit={submit}
-              state={saveButtonBarState}
-              disabled={isSaveDisabled}
-            />
+            <Savebar>
+              <Savebar.DeleteButton onClick={onDelete} />
+              <Savebar.Spacer />
+              <Savebar.CancelButton onClick={() => navigate(productListUrl())} />
+              <Savebar.ConfirmButton
+                transitionState={saveButtonBarState}
+                onClick={submit}
+                disabled={isSaveDisabled}
+              />
+            </Savebar>
+
             {canOpenAssignReferencesAttributeDialog && entityType && (
               <AssignAttributeValueDialog
                 entityType={entityType}
                 confirmButtonState={"default"}
                 products={referenceProducts}
                 pages={referencePages}
+                collections={referenceCollections}
+                categories={referenceCategories}
                 attribute={data.attributes.find(({ id }) => id === assignReferencesAttributeId)}
                 hasMore={handlers.fetchMoreReferences?.hasMore}
                 open={canOpenAssignReferencesAttributeDialog}

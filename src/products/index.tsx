@@ -1,12 +1,12 @@
 import { ConditionalProductFilterProvider } from "@dashboard/components/ConditionalFilter/context";
-import { useFlag } from "@dashboard/featureFlags";
+import { Route } from "@dashboard/components/Router";
 import { sectionNames } from "@dashboard/intl";
 import { asSortParams } from "@dashboard/utils/sort";
 import { getArrayQueryParam } from "@dashboard/utils/urls";
 import { parse as parseQs } from "qs";
 import React from "react";
 import { useIntl } from "react-intl";
-import { Route, RouteComponentProps, Switch } from "react-router-dom";
+import { Redirect, RouteComponentProps, Switch } from "react-router-dom";
 
 import { WindowTitle } from "../components/WindowTitle";
 import {
@@ -23,6 +23,7 @@ import {
   ProductVariantAddUrlQueryParams,
   productVariantEditPath,
   ProductVariantEditUrlQueryParams,
+  productVariantLegacyEditPath,
 } from "./urls";
 import ProductCreateComponent from "./views/ProductCreate";
 import ProductImageComponent from "./views/ProductImage";
@@ -42,7 +43,6 @@ interface matchParamsProductVariant {
 
 const ProductList: React.FC<RouteComponentProps<any>> = ({ location }) => {
   const qs = parseQs(location.search.substr(1)) as any;
-  const productListingPageFiltersFlag = useFlag("product_filters");
   const params: ProductListUrlQueryParams = asSortParams(
     {
       ...qs,
@@ -58,9 +58,7 @@ const ProductList: React.FC<RouteComponentProps<any>> = ({ location }) => {
   );
 
   return (
-    <ConditionalProductFilterProvider
-      locationSearch={productListingPageFiltersFlag.enabled ? location.search : ""}
-    >
+    <ConditionalProductFilterProvider locationSearch={location.search}>
       <ProductListComponent params={params} />
     </ConditionalProductFilterProvider>
   );
@@ -92,11 +90,11 @@ const ProductVariant: React.FC<RouteComponentProps<matchParamsProductVariant>> =
   return (
     <ProductVariantComponent
       variantId={decodeURIComponent(match.params.variantId ?? "")}
-      productId={decodeURIComponent(match.params.productId ?? "")}
       params={params}
     />
   );
 };
+
 const ProductImage: React.FC<RouteComponentProps<any>> = ({ location, match }) => {
   const qs = parseQs(location.search.substr(1));
   const params: ProductImageUrlQueryParams = qs;
@@ -130,10 +128,27 @@ const Component = () => {
         <Route exact path={productListPath} component={ProductList} />
         <Route exact path={productAddPath} component={ProductCreate} />
         <Route exact path={productVariantAddPath(":id")} component={ProductVariantCreate} />
+        {/* Redirect old product variant path to new format
+         * TODO: Remove in Saleor Dashboard 3.23 */}
         <Route
-          path={productVariantEditPath(":productId", ":variantId")}
-          component={ProductVariant}
+          path={productVariantLegacyEditPath(":productId", ":variantId")}
+          exact
+          render={({ match, location }) => {
+            if (!match.params.variantId) {
+              return <Redirect to={productListPath} />;
+            }
+
+            return (
+              <Redirect
+                to={{
+                  pathname: productVariantEditPath(match.params.variantId),
+                  search: location.search,
+                }}
+              />
+            );
+          }}
         />
+        <Route path={productVariantEditPath(":variantId")} component={ProductVariant} />
         <Route path={productImagePath(":productId", ":imageId")} component={ProductImage} />
         <Route path={productPath(":id")} component={ProductUpdate} />
       </Switch>

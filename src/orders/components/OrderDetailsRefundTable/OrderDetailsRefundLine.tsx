@@ -33,7 +33,7 @@ export const OrderDetailsRefundLine: React.FC<OrderDetailsRefundLineProps> = ({
 
   return (
     <GridTable.Row key={refund.id}>
-      <GridTable.Cell>
+      <GridTable.Cell paddingLeft={8}>
         <OrderTransactionRefundStatusPill
           status={refund.status}
           label={getGrantedRefundStatusMessage(refund.status, intl).toUpperCase()}
@@ -65,18 +65,20 @@ export const OrderDetailsRefundLine: React.FC<OrderDetailsRefundLineProps> = ({
       <Tooltip>
         <Tooltip.Trigger>
           <GridTable.Cell>
-            <UserAvatar initials={getUserInitials(refund.user as User)} />
+            {!!refund.user?.email && <UserAvatar initials={getUserInitials(refund.user as User)} />}
           </GridTable.Cell>
         </Tooltip.Trigger>
-        <Tooltip.Content>
-          <Text size={2}>{getUserName(refund.user, true)}</Text>
-        </Tooltip.Content>
+        {!!refund.user?.email && (
+          <Tooltip.Content>
+            <Text size={2}>{getUserName(refund.user, true)}</Text>
+          </Tooltip.Content>
+        )}
       </Tooltip>
       <GridTable.Cell>
         <EventTime date={refund.createdAt} />
       </GridTable.Cell>
-      <GridTable.Cell textAlign="right">
-        <Box display="flex" justifyContent="flex-end">
+      <GridTable.Cell textAlign="right" paddingRight={6}>
+        <Box data-test-id="edit-refund-button" display="flex" justifyContent="flex-end">
           {isEditable ? (
             <Link to={orderTransactionRefundEditUrl(orderId, refund.id)}>
               <Button icon={<EditIcon />} variant="secondary" />

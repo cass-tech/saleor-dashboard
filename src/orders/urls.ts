@@ -70,6 +70,14 @@ export const orderListUrl = (params?: OrderListUrlQueryParams): string => {
   }
 };
 
+export const orderListUrlWithCustomer = (userEmail?: string) => {
+  if (userEmail === undefined) {
+    return orderListPath;
+  }
+
+  return urlJoin(orderListPath, `?0[s0.customer]=${userEmail}`);
+};
+
 export const orderDraftListPath = urlJoin(orderSectionUrl, "drafts");
 export enum OrderDraftListUrlFiltersEnum {
   createdFrom = "createdFrom",

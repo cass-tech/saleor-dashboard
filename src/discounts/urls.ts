@@ -107,13 +107,15 @@ export type VoucherUrlDialog =
   | "assign-collection"
   | "assign-country"
   | "assign-product"
+  | "assign-variant"
   | "unassign-category"
   | "unassign-collection"
   | "unassign-product"
+  | "unassign-variant"
   | "remove"
   | ChannelsAction;
 export type VoucherUrlQueryParams = BulkAction & Dialog<VoucherUrlDialog>;
-export type VoucherCreateUrlQueryParams = Dialog<VoucherUrlDialog>;
+export type VoucherCreateUrlQueryParams = BulkAction & Dialog<VoucherUrlDialog>;
 export const voucherUrl = (id: string, params?: VoucherUrlQueryParams) =>
   voucherPath(encodeURIComponent(id)) + "?" + stringifyQs(params);
 export const voucherAddPath = urlJoin(voucherSection, "add");
