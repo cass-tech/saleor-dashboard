@@ -1,5 +1,5 @@
 import { apolloClient } from "@dashboard/graphql/client";
-import { pageMediaQuery } from "@dashboard/pages/queries";
+import { pageMediaQuery } from "@dashboard/modeling/queries";
 import createFileUploadHandler from "@dashboard/utils/handlers/fileUploadHandler";
 import EditorJS, { EditorConfig, OutputData, ToolConstructable } from "@editorjs/editorjs";
 import Paragraph from "@editorjs/paragraph";
