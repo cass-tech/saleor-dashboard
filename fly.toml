@@ -12,7 +12,7 @@ primary_region = 'jnb'
   API_URL = 'https://saleor.fly.dev/graphql/'
 
 [env]
-  API_URL = 'http://saleor.internal:8080/graphql/'
+  API_URL = 'https://saleor.fly.dev/graphql/'
   PORT = 80
 
 [http_service]
