@@ -4,12 +4,15 @@
 #
 
 app = 'saleor-dashboard-0'
-primary_region = 'cdg'
+primary_region = 'jnb'
 
 [build]
 
-[env]
+[build.args]
   API_URL = 'https://saleor.fly.dev/graphql/'
+
+[env]
+  API_URL = 'http://saleor.internal:8080/graphql/'
   PORT = 80
 
 [http_service]
@@ -23,4 +26,4 @@ primary_region = 'cdg'
 [[vm]]
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 512

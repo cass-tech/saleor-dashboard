@@ -2522,6 +2522,16 @@ export const PageAttributesFragmentDoc = gql`
 }
     ${PageSelectedAttributeFragmentDoc}
 ${AttributeValueListFragmentDoc}`;
+export const PageMediaFragmentDoc = gql`
+    fragment PageMedia on PageMedia {
+  id
+  alt
+  sortOrder
+  url(size: 1024)
+  type
+  oembedData
+}
+    `;
 export const PageDetailsFragmentDoc = gql`
     fragment PageDetails on Page {
   ...Page
@@ -2531,10 +2541,14 @@ export const PageDetailsFragmentDoc = gql`
   seoTitle
   seoDescription
   publishedAt
+  media {
+    ...PageMedia
+  }
 }
     ${PageFragmentDoc}
 ${PageAttributesFragmentDoc}
-${MetadataFragmentDoc}`;
+${MetadataFragmentDoc}
+${PageMediaFragmentDoc}`;
 export const PermissionGroupFragmentDoc = gql`
     fragment PermissionGroup on Group {
   id
@@ -11081,6 +11095,137 @@ export function usePageCreateMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type PageCreateMutationHookResult = ReturnType<typeof usePageCreateMutation>;
 export type PageCreateMutationResult = Apollo.MutationResult<Types.PageCreateMutation>;
 export type PageCreateMutationOptions = Apollo.BaseMutationOptions<Types.PageCreateMutation, Types.PageCreateMutationVariables>;
+export const PageMediaCreateDocument = gql`
+    mutation PageMediaCreate($page: ID!, $image: Upload, $alt: String, $mediaUrl: String) {
+  pageMediaCreate(
+    input: {alt: $alt, image: $image, page: $page, mediaUrl: $mediaUrl}
+  ) {
+    errors {
+      ...PageError
+    }
+    page {
+      id
+      media {
+        ...PageMedia
+      }
+    }
+  }
+}
+    ${PageErrorFragmentDoc}
+${PageMediaFragmentDoc}`;
+export type PageMediaCreateMutationFn = Apollo.MutationFunction<Types.PageMediaCreateMutation, Types.PageMediaCreateMutationVariables>;
+
+/**
+ * __usePageMediaCreateMutation__
+ *
+ * To run a mutation, you first call `usePageMediaCreateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePageMediaCreateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [pageMediaCreateMutation, { data, loading, error }] = usePageMediaCreateMutation({
+ *   variables: {
+ *      page: // value for 'page'
+ *      image: // value for 'image'
+ *      alt: // value for 'alt'
+ *      mediaUrl: // value for 'mediaUrl'
+ *   },
+ * });
+ */
+export function usePageMediaCreateMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<Types.PageMediaCreateMutation, Types.PageMediaCreateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<Types.PageMediaCreateMutation, Types.PageMediaCreateMutationVariables>(PageMediaCreateDocument, options);
+      }
+export type PageMediaCreateMutationHookResult = ReturnType<typeof usePageMediaCreateMutation>;
+export type PageMediaCreateMutationResult = Apollo.MutationResult<Types.PageMediaCreateMutation>;
+export type PageMediaCreateMutationOptions = Apollo.BaseMutationOptions<Types.PageMediaCreateMutation, Types.PageMediaCreateMutationVariables>;
+export const PageMediaDeleteDocument = gql`
+    mutation PageMediaDelete($id: ID!) {
+  pageMediaDelete(id: $id) {
+    errors {
+      ...PageError
+    }
+    page {
+      id
+      media {
+        id
+      }
+    }
+  }
+}
+    ${PageErrorFragmentDoc}`;
+export type PageMediaDeleteMutationFn = Apollo.MutationFunction<Types.PageMediaDeleteMutation, Types.PageMediaDeleteMutationVariables>;
+
+/**
+ * __usePageMediaDeleteMutation__
+ *
+ * To run a mutation, you first call `usePageMediaDeleteMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePageMediaDeleteMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [pageMediaDeleteMutation, { data, loading, error }] = usePageMediaDeleteMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function usePageMediaDeleteMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<Types.PageMediaDeleteMutation, Types.PageMediaDeleteMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<Types.PageMediaDeleteMutation, Types.PageMediaDeleteMutationVariables>(PageMediaDeleteDocument, options);
+      }
+export type PageMediaDeleteMutationHookResult = ReturnType<typeof usePageMediaDeleteMutation>;
+export type PageMediaDeleteMutationResult = Apollo.MutationResult<Types.PageMediaDeleteMutation>;
+export type PageMediaDeleteMutationOptions = Apollo.BaseMutationOptions<Types.PageMediaDeleteMutation, Types.PageMediaDeleteMutationVariables>;
+export const PageMediaUpdateDocument = gql`
+    mutation PageMediaUpdate($id: ID!, $alt: String!) {
+  pageMediaUpdate(id: $id, input: {alt: $alt}) {
+    errors {
+      ...PageError
+    }
+    page {
+      id
+      media {
+        ...PageMedia
+      }
+    }
+  }
+}
+    ${PageErrorFragmentDoc}
+${PageMediaFragmentDoc}`;
+export type PageMediaUpdateMutationFn = Apollo.MutationFunction<Types.PageMediaUpdateMutation, Types.PageMediaUpdateMutationVariables>;
+
+/**
+ * __usePageMediaUpdateMutation__
+ *
+ * To run a mutation, you first call `usePageMediaUpdateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePageMediaUpdateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [pageMediaUpdateMutation, { data, loading, error }] = usePageMediaUpdateMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      alt: // value for 'alt'
+ *   },
+ * });
+ */
+export function usePageMediaUpdateMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<Types.PageMediaUpdateMutation, Types.PageMediaUpdateMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useMutation<Types.PageMediaUpdateMutation, Types.PageMediaUpdateMutationVariables>(PageMediaUpdateDocument, options);
+      }
+export type PageMediaUpdateMutationHookResult = ReturnType<typeof usePageMediaUpdateMutation>;
+export type PageMediaUpdateMutationResult = Apollo.MutationResult<Types.PageMediaUpdateMutation>;
+export type PageMediaUpdateMutationOptions = Apollo.BaseMutationOptions<Types.PageMediaUpdateMutation, Types.PageMediaUpdateMutationVariables>;
 export const PageUpdateDocument = gql`
     mutation PageUpdate($id: ID!, $input: PageInput!, $firstValues: Int, $afterValues: String, $lastValues: Int, $beforeValues: String) {
   pageUpdate(id: $id, input: $input) {
@@ -11418,6 +11563,45 @@ export function usePageCountLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHo
 export type PageCountQueryHookResult = ReturnType<typeof usePageCountQuery>;
 export type PageCountLazyQueryHookResult = ReturnType<typeof usePageCountLazyQuery>;
 export type PageCountQueryResult = Apollo.QueryResult<Types.PageCountQuery, Types.PageCountQueryVariables>;
+export const PageMediaDocument = gql`
+    query PageMedia($id: ID, $size: Int) {
+  page(id: $id) {
+    media {
+      url(size: $size)
+      id
+    }
+  }
+}
+    `;
+
+/**
+ * __usePageMediaQuery__
+ *
+ * To run a query within a React component, call `usePageMediaQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePageMediaQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePageMediaQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *      size: // value for 'size'
+ *   },
+ * });
+ */
+export function usePageMediaQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<Types.PageMediaQuery, Types.PageMediaQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return ApolloReactHooks.useQuery<Types.PageMediaQuery, Types.PageMediaQueryVariables>(PageMediaDocument, options);
+      }
+export function usePageMediaLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<Types.PageMediaQuery, Types.PageMediaQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return ApolloReactHooks.useLazyQuery<Types.PageMediaQuery, Types.PageMediaQueryVariables>(PageMediaDocument, options);
+        }
+export type PageMediaQueryHookResult = ReturnType<typeof usePageMediaQuery>;
+export type PageMediaLazyQueryHookResult = ReturnType<typeof usePageMediaLazyQuery>;
+export type PageMediaQueryResult = Apollo.QueryResult<Types.PageMediaQuery, Types.PageMediaQueryVariables>;
 export const OrderCancelDocument = gql`
     mutation OrderCancel($id: ID!) {
   orderCancel(id: $id) {
